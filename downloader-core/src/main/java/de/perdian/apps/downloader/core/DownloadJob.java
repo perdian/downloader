@@ -38,7 +38,7 @@ public class DownloadJob {
   private Long myCancelTime = null;
   private Path myResult = null;
   private Exception myError = null;
-  private List<DownloadProgressListener> myProgressListeners = new ArrayList<DownloadProgressListener>();
+  private List<DownloadProgressListener> myProgressListeners = new ArrayList<>();
 
   DownloadJob(DownloadEngine owner) {
     this.setOwner(owner);
