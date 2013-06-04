@@ -379,6 +379,14 @@ public class DownloadEngine {
   // --- Public property access methods ----------------------------------------
   // ---------------------------------------------------------------------------
 
+  /**
+   * Checks if there is any work to be done, meaning that either jobs are
+   * waiting to be executed or are being executed right now
+   */
+  public synchronized boolean isBusy() {
+    return !this.getWaitingJobs().isEmpty() || !this.getActiveJobs().isEmpty();
+  }
+
   public int getProcessorCount() {
     return this.myProcessorCount;
   }
