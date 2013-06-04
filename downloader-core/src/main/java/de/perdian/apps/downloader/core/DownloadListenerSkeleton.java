@@ -16,18 +16,35 @@
 package de.perdian.apps.downloader.core;
 
 /**
- * Callback interface to get notified when a change in the state of a
- * {@code DownloadJob} has been detected
+ * Empty implementation of the {@link DownloadListener} interface
  *
  * @author Christian Robert
  */
 
-public interface DownloadJobListener {
+public class DownloadListenerSkeleton implements DownloadListener {
 
-  public void jobScheduled(DownloadJob job);
-  public void jobStarted(DownloadJob job);
-  public void jobCompleted(DownloadJob job);
-  public void jobCancelled(DownloadJob job);
-  public void jobProgress(DownloadJob job, long bytesWritten, long totalBytes);
+  @Override
+  public void processorCountUpdated(int newProcessorCount) {
+  }
+
+  @Override
+  public void requestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+  }
+
+  @Override
+  public void jobScheduled(DownloadJob job) {
+  }
+
+  @Override
+  public void jobStarted(DownloadJob job) {
+  }
+
+  @Override
+  public void jobCompleted(DownloadJob job) {
+  }
+
+  @Override
+  public void jobCancelled(DownloadJob job) {
+  }
 
 }

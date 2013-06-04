@@ -18,17 +18,17 @@ package de.perdian.apps.downloader.core;
 import java.nio.file.Path;
 
 /**
- * Builder from which a {@link Downloader} can be obtained. The builder itself
- * remains ignorant upon downloaders created by it, therefore multiple
+ * Builder from which a {@link DownloadEngine} can be obtained. The builder
+ * itself remains ignorant upon engines created by it, therefore multiple
  * invocations upon the {@code build} methode will always create a new
- * downloader that is completely independent of the builder from which it was
- * created as well as others downloaders that have been created by the builder
+ * engine that is completely independent of the builder from which it was
+ * created as well as others engines that have been created by the builder
  * instance.
  *
  * @author Christian Robert
  */
 
-public class DownloaderBuilder {
+public class DownloadEngineBuilder {
 
   private int myProcessorCount = 1;
   private Path myMetadataDirectory = null;
@@ -36,13 +36,13 @@ public class DownloaderBuilder {
   private Path myTargetDirectory = null;
 
   /**
-   * Creates a new downloader implementation that is configured with the
-   * information configured in the builder at the time this method is called.
+   * Creates a new engine implementation that is configured with the information
+   * configured in the builder at the time this method is called.
    * Subsequent changes of the builders state will not be reflected in the
-   * created downloader, as well as subsequent changes in the created
-   * downloader will not be reflected in the state of the builder.
+   * created engine, as well as subsequent changes in the created engine will
+   * not be reflected in the state of the builder.
    */
-  public Downloader build() {
+  public DownloadEngine build() {
     if(this.getWorkingDirectory() == null) {
       throw new IllegalArgumentException("Property workingDirectory must not be null!");
     } else if(this.getMetadataDirectory() == null) {
@@ -52,12 +52,12 @@ public class DownloaderBuilder {
     } else if(this.getProcessorCount() <= 0) {
       throw new IllegalArgumentException("Property processorCount must be larger than 0! (Value found: " + this.getProcessorCount() + ")");
     } else {
-      Downloader downloader = new Downloader();
-      downloader.setProcessorCount(this.getProcessorCount());
-      downloader.setTargetDirectory(this.getTargetDirectory());
-      downloader.setMetadataDirectory(this.getMetadataDirectory());
-      downloader.setWorkingDirectory(this.getWorkingDirectory());
-      return downloader;
+      DownloadEngine engine = new DownloadEngine();
+      engine.setProcessorCount(this.getProcessorCount());
+      engine.setTargetDirectory(this.getTargetDirectory());
+      engine.setMetadataDirectory(this.getMetadataDirectory());
+      engine.setWorkingDirectory(this.getWorkingDirectory());
+      return engine;
     }
   }
 

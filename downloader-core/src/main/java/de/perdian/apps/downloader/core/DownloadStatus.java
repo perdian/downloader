@@ -17,7 +17,7 @@ package de.perdian.apps.downloader.core;
 
 /**
  * Enumration to describe the state of a {@link DownloadJob} within a
- * {@link Downloader}.
+ * {@link DownloadEngine}.
  *
  * @author Christian Robert
  */
@@ -26,22 +26,22 @@ public enum DownloadStatus {
 
   /**
    * Signalizes that a {@link DownloadRequest} has been accepted by a
-   * {@link Downloader} and is awaiting it's activation and actual download
+   * {@link DownloadEngine} and is awaiting it's activation and actual download
    * process.
    */
   SCHEDULED,
 
   /**
-   * Signalizes that a {@link Downloader} has started to process the data for
-   * a specific {@link DownloadJob} which means that a processor thread is
+   * Signalizes that a {@link DownloadEngine} has started to process the data
+   * for a specific {@link DownloadJob} which means that a processor thread is
    * reading bytes from a source and writing them into a target file.
    */
   ACTIVE,
 
   /**
-   * Signalizes that a {@link Downloader} has completed the transfer process for
-   * a {@link DownloadJob}. No further interaction between the
-   * {@link Downloader} and any other kind of system will be performed.
+   * Signalizes that a {@link DownloadEngine} has completed the transfer process
+   * for a {@link DownloadJob}. No further interaction between the
+   * {@link DownloadEngine} and any other kind of system will be performed.
    */
   COMPLETED,
 

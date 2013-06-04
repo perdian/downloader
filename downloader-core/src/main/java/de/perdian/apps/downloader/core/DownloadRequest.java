@@ -18,7 +18,7 @@ package de.perdian.apps.downloader.core;
 import java.io.Serializable;
 
 /**
- * Transporter object to request the {@link Downloader} to schedule a
+ * Transporter object to request the {@link DownloadEngine} to schedule a
  * download operation for a remote resources that is identified by the
  * information encapsulated in this request object.
  *
@@ -35,6 +35,7 @@ public class DownloadRequest implements Serializable {
   static final long serialVersionUID = 1L;
 
   private DownloadStreamFactory myStreamFactory = null;
+  private String myId = null;
   private String myTitle = null;
   private String myTargetFileName = null;
 
@@ -42,7 +43,8 @@ public class DownloadRequest implements Serializable {
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append(this.getClass().getSimpleName());
-    result.append("[title=").append(this.getTitle());
+    result.append("[id=").append(this.getId());
+    result.append(",title=").append(this.getTitle());
     result.append(",targetFileName=").append(this.getTargetFileName());
     result.append(",streamFactory=").append(this.getStreamFactory());
     return result.append("]").toString();
@@ -51,6 +53,13 @@ public class DownloadRequest implements Serializable {
   // ---------------------------------------------------------------------------
   // --- Property access methods -----------------------------------------------
   // ---------------------------------------------------------------------------
+
+  public String getId() {
+    return this.myId;
+  }
+  public void setId(String id) {
+    this.myId = id;
+  }
 
   public DownloadStreamFactory getStreamFactory() {
     return this.myStreamFactory;

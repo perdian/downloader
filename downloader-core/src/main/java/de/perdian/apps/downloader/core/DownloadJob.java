@@ -16,19 +16,20 @@
 package de.perdian.apps.downloader.core;
 
 import java.nio.file.Path;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Wrapper for all the available information about a download that has been
- * accepted into a {@link Downloader} object.
+ * accepted into a {@link DownloadEngine} object.
  *
  * @author Christian Robert
  */
 
 public class DownloadJob {
 
-  private Downloader myOwner = null;
+  private DownloadEngine myOwner = null;
   private DownloadRequest myRequest = null;
   private DownloadStatus myStatus = null;
   private Long myScheduleTime = null;
@@ -37,10 +38,19 @@ public class DownloadJob {
   private Long myCancelTime = null;
   private Path myResult = null;
   private Exception myError = null;
-  private List<DownloadJobListener> myListeners = Collections.emptyList();
+  private List<DownloadProgressListener> myProgressListeners = new ArrayList<DownloadProgressListener>();
 
-  DownloadJob(Downloader owner) {
+  DownloadJob(DownloadEngine owner) {
     this.setOwner(owner);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder result = new StringBuilder();
+    result.append(this.getClass().getSimpleName());
+    result.append("[request=").append(this.getRequest());
+    result.append(",status=").append(this.getStatus());
+    return result.append("]").toString();
   }
 
   // ---------------------------------------------------------------------------
@@ -61,7 +71,7 @@ public class DownloadJob {
   }
 
   /**
-   * Forces this job to be started. Normally the {@link Downloader} will decide
+   * Forces this job to be started. Normally the {@link DownloadEngine} will decide
    * when a submitted job will be started, that is when a processor thread will
    * be assigned to perform the data transfer from the source to a local file.
    * If this method is called however the transfer will start immediately. An
@@ -74,42 +84,25 @@ public class DownloadJob {
   }
 
   // ---------------------------------------------------------------------------
-  // --- Listener access -------------------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  private void fireStatusUpdated(DownloadStatus status) {
-    for(DownloadJobListener listener : this.getListeners()) {
-      switch(status) {
-        case ACTIVE:
-          listener.jobStarted(this);
-          break;
-        case CANCELLED:
-          listener.jobCancelled(this);
-          break;
-        case COMPLETED:
-          listener.jobCompleted(this);
-          break;
-        case SCHEDULED:
-          listener.jobScheduled(this);
-          break;
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
   // --- Listener access methods -----------------------------------------------
   // ---------------------------------------------------------------------------
 
   void fireProgress(long bytesWritten, long totalBytes) {
-    for(DownloadJobListener listener : this.getListeners()) {
-      listener.jobProgress(this, bytesWritten, totalBytes);
+    for(DownloadProgressListener progressListener : this.getProgressListeners()) {
+      progressListener.progress(this, bytesWritten, totalBytes);
     }
   }
-  List<DownloadJobListener> getListeners() {
-    return this.myListeners;
+  List<DownloadProgressListener> getProgressListeners() {
+    return this.myProgressListeners;
   }
-  void setListeners(List<DownloadJobListener> listeners) {
-    this.myListeners = listeners;
+  void setProgressListeners(List<DownloadProgressListener> progressListeners) {
+    this.myProgressListeners = progressListeners;
+  }
+  public void addProgressListener(DownloadProgressListener progressListener) {
+    this.getProgressListeners().add(Objects.requireNonNull(progressListener));
+  }
+  public boolean removeProgressListener(DownloadProgressListener progressListener) {
+    return this.getProgressListeners().remove(progressListener);
   }
 
   // ---------------------------------------------------------------------------
@@ -134,11 +127,10 @@ public class DownloadJob {
   }
   void setStatus(DownloadStatus status) {
     this.myStatus = status;
-    this.fireStatusUpdated(status);
   }
 
   /**
-   * Gets the time when the download has been accepted by a {@link Downloader}
+   * Gets the time when the download has been accepted by a {@link DownloadEngine}
    */
   public Long getScheduleTime() {
     return this.myScheduleTime;
@@ -149,7 +141,7 @@ public class DownloadJob {
 
   /**
    * Gets the time when the job was started, which means the time when the
-   * {@link Downloader} instance has assigned a processor thread to load the
+   * {@link DownloadEngine} instance has assigned a processor thread to load the
    * data from a remote resource that reads the content and writes them into a
    * temporary file
    */
@@ -194,13 +186,13 @@ public class DownloadJob {
   }
 
   /**
-   * Gets the owner of this job, which means the {@link Downloader} in which the
+   * Gets the owner of this job, which means the {@link DownloadEngine} in which the
    * current job resides and who is responsible for activating it.
    */
-  public Downloader getOwner() {
+  public DownloadEngine getOwner() {
     return this.myOwner;
   }
-  void setOwner(Downloader owner) {
+  void setOwner(DownloadEngine owner) {
     this.myOwner = owner;
   }
 

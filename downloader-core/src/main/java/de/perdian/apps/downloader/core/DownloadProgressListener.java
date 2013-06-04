@@ -16,17 +16,14 @@
 package de.perdian.apps.downloader.core;
 
 /**
- * Callback interface to get notified upon changes in a downloader
+ * Callback interface to get notified when a change in the state of a
+ * {@code DownloadJob} has been detected
  *
  * @author Christian Robert
  */
 
-public interface DownloaderListener {
+public interface DownloadProgressListener {
 
-  /**
-   * Called when the {@code processorCount} property of the {@link Downloader}
-   * has been changed
-   */
-  public void processorCountUpdated(int newProcessorCount);
+  public void progress(DownloadJob job, long bytesWritten, long totalBytes);
 
 }
