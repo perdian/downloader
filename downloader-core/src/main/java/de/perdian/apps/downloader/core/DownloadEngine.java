@@ -290,8 +290,8 @@ public class DownloadEngine {
     if(!Files.exists(workingFilePath.getParent())) {
       Files.createDirectory(workingFilePath.getParent());
     }
-
     long inStreamSize = job.getRequest().getStreamFactory().size();
+
     try(InputStream inStream = job.getRequest().getStreamFactory().openStream()) {
       try(OutputStream outStream = Files.newOutputStream(workingFilePath, Files.exists(workingFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
         long totalBytesWritten = 0;
@@ -302,6 +302,14 @@ public class DownloadEngine {
           job.fireProgress(totalBytesWritten, inStreamSize);
         }
         outStream.flush();
+      } catch(final Exception e) {
+        log.warn("Error occured during file transfer [" + job + "]", e);
+        try {
+          Files.deleteIfExists(workingFilePath);
+        } catch(Exception e2) {
+          log.debug("Cannot delete working file at: " + workingFilePath, e2);
+        }
+        throw e;
       }
     }
 
@@ -312,7 +320,6 @@ public class DownloadEngine {
     return targetFilePath;
 
   }
-
 
   // ---------------------------------------------------------------------------
   // --- Listener access -------------------------------------------------------
