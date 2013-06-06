@@ -31,8 +31,6 @@ import java.nio.file.Path;
 public class DownloadEngineBuilder {
 
   private int myProcessorCount = 1;
-  private Path myMetadataDirectory = null;
-  private Path myWorkingDirectory = null;
   private Path myTargetDirectory = null;
 
   /**
@@ -43,11 +41,7 @@ public class DownloadEngineBuilder {
    * not be reflected in the state of the builder.
    */
   public DownloadEngine build() {
-    if(this.getWorkingDirectory() == null) {
-      throw new IllegalArgumentException("Property workingDirectory must not be null!");
-    } else if(this.getMetadataDirectory() == null) {
-      throw new IllegalArgumentException("Property metadataDirectory must not be null!");
-    } else if(this.getTargetDirectory() == null) {
+    if(this.getTargetDirectory() == null) {
       throw new IllegalArgumentException("Property targetDirectory must not be null!");
     } else if(this.getProcessorCount() <= 0) {
       throw new IllegalArgumentException("Property processorCount must be larger than 0! (Value found: " + this.getProcessorCount() + ")");
@@ -55,8 +49,6 @@ public class DownloadEngineBuilder {
       DownloadEngine engine = new DownloadEngine();
       engine.setProcessorCount(this.getProcessorCount());
       engine.setTargetDirectory(this.getTargetDirectory());
-      engine.setMetadataDirectory(this.getMetadataDirectory());
-      engine.setWorkingDirectory(this.getWorkingDirectory());
       return engine;
     }
   }
@@ -70,20 +62,6 @@ public class DownloadEngineBuilder {
   }
   public void setProcessorCount(int processorCount) {
     this.myProcessorCount = processorCount;
-  }
-
-  public Path getWorkingDirectory() {
-    return this.myWorkingDirectory;
-  }
-  public void setWorkingDirectory(Path workingDirectory) {
-    this.myWorkingDirectory = workingDirectory;
-  }
-
-  public Path getMetadataDirectory() {
-    return this.myMetadataDirectory;
-  }
-  public void setMetadataDirectory(Path metadataDirectory) {
-    this.myMetadataDirectory = metadataDirectory;
   }
 
   public Path getTargetDirectory() {

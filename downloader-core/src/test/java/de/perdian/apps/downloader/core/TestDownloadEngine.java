@@ -42,8 +42,6 @@ public class TestDownloadEngine {
     this.setFileSystem(fileSystem);
 
     DownloadEngineBuilder engineBuilder = new DownloadEngineBuilder();
-    engineBuilder.setMetadataDirectory(fileSystem.getPath("meta/"));
-    engineBuilder.setWorkingDirectory(fileSystem.getPath("working/"));
     engineBuilder.setTargetDirectory(fileSystem.getPath("target/"));
     this.setEngineBuilder(engineBuilder);
 

@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,8 +52,6 @@ public class DownloadEngine {
   private ExecutorService myExecutorService = Executors.newCachedThreadPool();
   private List<DownloadListener> myListeners = new CopyOnWriteArrayList<>();
   private Path myTargetDirectory = null;
-  private Path myWorkingDirectory = null;
-  private Path myMetadataDirectory = null;
   private int myProcessorCount = 1;
   private List<DownloadJob> myWaitingJobs = new CopyOnWriteArrayList<>();
   private List<DownloadJob> myActiveJobs = new CopyOnWriteArrayList<>();
@@ -286,14 +283,13 @@ public class DownloadEngine {
   Path runJobTransfer(DownloadJob job) throws IOException {
 
     Path targetFilePath = this.getTargetDirectory().resolve(job.getRequest().getTargetFileName());
-    Path workingFilePath = this.getWorkingDirectory().resolve(targetFilePath.getFileName());
-    if(!Files.exists(workingFilePath.getParent())) {
-      Files.createDirectory(workingFilePath.getParent());
+    if(!Files.exists(targetFilePath.getParent())) {
+      Files.createDirectory(targetFilePath.getParent());
     }
     long inStreamSize = job.getRequest().getStreamFactory().size();
 
     try(InputStream inStream = job.getRequest().getStreamFactory().openStream()) {
-      try(OutputStream outStream = Files.newOutputStream(workingFilePath, Files.exists(workingFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
+      try(OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
         long totalBytesWritten = 0;
         byte[] buffer = new byte[8092];
         for(int bufferSize = inStream.read(buffer); bufferSize > -1; bufferSize = inStream.read(buffer)) {
@@ -305,18 +301,14 @@ public class DownloadEngine {
       } catch(final Exception e) {
         log.warn("Error occured during file transfer [" + job + "]", e);
         try {
-          Files.deleteIfExists(workingFilePath);
+          Files.deleteIfExists(targetFilePath);
         } catch(Exception e2) {
-          log.debug("Cannot delete working file at: " + workingFilePath, e2);
+          log.debug("Cannot delete target file at: " + targetFilePath, e2);
         }
         throw e;
       }
     }
 
-    if(!Files.exists(targetFilePath.getParent())) {
-      Files.createDirectory(targetFilePath.getParent());
-    }
-    Files.move(workingFilePath, targetFilePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     return targetFilePath;
 
   }
@@ -434,20 +426,6 @@ public class DownloadEngine {
   }
   void setTargetDirectory(Path targetDirectory) {
     this.myTargetDirectory = targetDirectory;
-  }
-
-  Path getWorkingDirectory() {
-    return this.myWorkingDirectory;
-  }
-  void setWorkingDirectory(Path workingDirectory) {
-    this.myWorkingDirectory = workingDirectory;
-  }
-
-  Path getMetadataDirectory() {
-    return this.myMetadataDirectory;
-  }
-  void setMetadataDirectory(Path metadataDirectory) {
-    this.myMetadataDirectory = metadataDirectory;
   }
 
   boolean isShutdown() {

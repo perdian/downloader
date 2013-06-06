@@ -11,4 +11,12 @@
   <name>Downloader UI</name>
   <description>Downloader UI</description>
 
+  <dependencies>
+    <dependency>
+      <groupId>de.perdian.apps.downloader</groupId>
+      <artifactId>downloader-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
 </project>
