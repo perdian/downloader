@@ -59,13 +59,13 @@ public class TestDownloadEngine {
     DownloadListener listener = Mockito.mock(DownloadListener.class);
 
     byte[] streamBytes = "TEST".getBytes();
-    DownloadStreamFactory streamFactory = Mockito.mock(DownloadStreamFactory.class);
-    Mockito.when(streamFactory.size()).thenReturn(Long.valueOf(streamBytes.length));
-    Mockito.when(streamFactory.openStream()).thenReturn(new ByteArrayInputStream(streamBytes));
+    DownloadStreamFactory contentFactory = Mockito.mock(DownloadStreamFactory.class);
+    Mockito.when(contentFactory.size()).thenReturn(Long.valueOf(streamBytes.length));
+    Mockito.when(contentFactory.openStream()).thenReturn(new ByteArrayInputStream(streamBytes));
 
     DownloadRequest request = new DownloadRequest();
     request.setTargetFileName("abc.def");
-    request.setStreamFactory(streamFactory);
+    request.setContentFactory(contentFactory);
 
     DownloadEngine engine = this.getEngineBuilder().build();
     engine.addListener(listener);
@@ -80,7 +80,7 @@ public class TestDownloadEngine {
     Assert.assertNotNull(job.getScheduleTime());
     Assert.assertNotNull(job.getStartTime());
     Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
-    Assert.assertArrayEquals(streamBytes, Files.readAllBytes(job.getResult()));
+    Assert.assertArrayEquals(streamBytes, Files.readAllBytes(job.getTargetFile()));
 
     Mockito.verify(listener).requestSubmitted(Matchers.eq(request));
     Mockito.verify(listener).jobStarted(Matchers.eq(job));
@@ -97,13 +97,13 @@ public class TestDownloadEngine {
     DownloadProgressListener progressListener = Mockito.mock(DownloadProgressListener.class);
 
     IOException streamException = new IOException("ERROR");
-    DownloadStreamFactory streamFactory = Mockito.mock(DownloadStreamFactory.class);
-    Mockito.when(streamFactory.size()).thenReturn(Long.valueOf(-1));
-    Mockito.when(streamFactory.openStream()).thenThrow(streamException);
+    DownloadStreamFactory contentFactory = Mockito.mock(DownloadStreamFactory.class);
+    Mockito.when(contentFactory.size()).thenReturn(Long.valueOf(-1));
+    Mockito.when(contentFactory.openStream()).thenThrow(streamException);
 
     DownloadRequest request = new DownloadRequest();
     request.setTargetFileName("abc.def");
-    request.setStreamFactory(streamFactory);
+    request.setContentFactory(contentFactory);
 
     DownloadEngine engine = this.getEngineBuilder().build();
     engine.addListener(listener);
@@ -130,16 +130,16 @@ public class TestDownloadEngine {
   @Test(expected=IllegalArgumentException.class)
   public void submitWithNullTargetFileName() {
     DownloadRequest request = new DownloadRequest();
-    request.setStreamFactory(Mockito.mock(DownloadStreamFactory.class));
+    request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
     request.setTargetFileName(null);
     DownloadEngine engine = this.getEngineBuilder().build();
     engine.submit(request);
   }
 
   @Test(expected=IllegalArgumentException.class)
-  public void submitWithNullStreamFactory() {
+  public void submitWithNullContentFactory() {
     DownloadRequest request = new DownloadRequest();
-    request.setStreamFactory(null);
+    request.setContentFactory(null);
     request.setTargetFileName("targetFileName");
     DownloadEngine engine = this.getEngineBuilder().build();
     engine.submit(request);
@@ -148,7 +148,7 @@ public class TestDownloadEngine {
   @Test(expected=IllegalStateException.class)
   public void submitWhenShutdown() {
     DownloadRequest request = new DownloadRequest();
-    request.setStreamFactory(Mockito.mock(DownloadStreamFactory.class));
+    request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
     request.setTargetFileName("targetFileName");
     DownloadEngine engine = this.getEngineBuilder().build();
     engine.shutdown();
@@ -162,7 +162,7 @@ public class TestDownloadEngine {
     Mockito.doThrow(new DownloadRejectedException("X")).when(listener).requestSubmitted(Matchers.any(DownloadRequest.class));
 
     DownloadRequest request = new DownloadRequest();
-    request.setStreamFactory(Mockito.mock(DownloadStreamFactory.class));
+    request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
     request.setTargetFileName("targetFileName");
 
     DownloadEngine engine = this.getEngineBuilder().build();

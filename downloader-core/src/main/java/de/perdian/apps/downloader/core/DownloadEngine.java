@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,9 +54,10 @@ public class DownloadEngine {
   private ExecutorService myExecutorService = Executors.newCachedThreadPool();
   private List<DownloadListener> myListeners = new CopyOnWriteArrayList<>();
   private Path myTargetDirectory = null;
+  private int myBufferSize = 4096;
   private int myProcessorCount = 1;
-  private List<DownloadJob> myWaitingJobs = new CopyOnWriteArrayList<>();
-  private List<DownloadJob> myActiveJobs = new CopyOnWriteArrayList<>();
+  private Queue<DownloadJob> myWaitingJobs = new PriorityQueue<>(10, new DownloadJob.PriorityComparator());
+  private List<DownloadJob> myActiveJobs = new ArrayList<>();
   private boolean stateShutdown = false;
 
   /**
@@ -85,8 +88,8 @@ public class DownloadEngine {
       throw new IllegalArgumentException("Parameter 'request' must not be null!");
     } else if(request.getTargetFileName() == null) {
       throw new IllegalArgumentException("Property 'targetFileName' of request must not be null!");
-    } else if(request.getStreamFactory() == null) {
-      throw new IllegalArgumentException("Property 'streamFactory' of request must not be null!");
+    } else if(request.getContentFactory() == null) {
+      throw new IllegalArgumentException("Property 'contentFactory' of request must not be null!");
     } else {
 
       // First we contact all the validators and make sure the new request might
@@ -154,7 +157,7 @@ public class DownloadEngine {
       this.setShutdown(true);
       this.getExecutorService().shutdown();
     }
-    return Collections.unmodifiableList(this.getWaitingJobs());
+    return Collections.unmodifiableList(new ArrayList<>(this.getWaitingJobs()));
   }
 
   /**
@@ -175,7 +178,7 @@ public class DownloadEngine {
         log.warn("Cannot wait for shutdown of ExecutorService", e);
       }
     }
-    return Collections.unmodifiableList(this.getWaitingJobs());
+    return Collections.unmodifiableList(new ArrayList<>(this.getWaitingJobs()));
   }
 
   // ---------------------------------------------------------------------------
@@ -227,6 +230,7 @@ public class DownloadEngine {
       job.setStatus(DownloadStatus.CANCELLED);
       job.setCancelTime(System.currentTimeMillis());
       this.fireJobCancelled(job);
+      this.checkWaitingJobs();
       return true;
 
     }
@@ -237,7 +241,7 @@ public class DownloadEngine {
       if(this.getActiveJobs().size() >= this.getProcessorCount()) {
         return;
       } else {
-        this.startJob(this.getWaitingJobs().remove(0), false);
+        this.startJob(this.getWaitingJobs().remove(), false);
       }
     }
   }
@@ -249,18 +253,19 @@ public class DownloadEngine {
   void runJob(DownloadJob job) {
     try {
       log.info("Running job: {}", job);
-      this.fireJobStarted(job);
-      job.setResult(this.runJobTransfer(job));
+      this.runJobTransfer(job);
+      job.setEndTime(System.currentTimeMillis());
+      job.setStatus(DownloadStatus.COMPLETED);
       log.info("Job completed successfully: {}", job);
     } catch(Exception e) {
-      log.info("Exception occured during job execution: " + job, e);
+      job.setEndTime(System.currentTimeMillis());
       job.setError(e);
+      job.setStatus(DownloadStatus.COMPLETED);
+      log.info("Exception occured during job execution: " + job, e);
     } finally {
       try {
 
         // Update the job itself
-        job.setStatus(DownloadStatus.COMPLETED);
-        job.setEndTime(System.currentTimeMillis());
         this.fireJobCompleted(job);
 
       } finally {
@@ -287,13 +292,16 @@ public class DownloadEngine {
     if(!Files.exists(targetFilePath.getParent())) {
       Files.createDirectory(targetFilePath.getParent());
     }
-    long inStreamSize = job.getRequest().getStreamFactory().size();
+    job.setTargetFile(targetFilePath);
+    this.fireJobStarted(job);
 
-    try(InputStream inStream = job.getRequest().getStreamFactory().openStream()) {
+    long inStreamSize = job.getRequest().getContentFactory().size();
+
+    try(InputStream inStream = job.getRequest().getContentFactory().openStream()) {
       try(OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
         long totalBytesWritten = 0;
-        byte[] buffer = new byte[8092];
-        for(int bufferSize = inStream.read(buffer); bufferSize > -1; bufferSize = inStream.read(buffer)) {
+        byte[] buffer = new byte[this.getBufferSize()];
+        for(int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadStatus.ACTIVE.equals(job.getStatus()); bufferSize = inStream.read(buffer)) {
           outStream.write(buffer, 0, bufferSize);
           totalBytesWritten += bufferSize;
           job.fireProgress(totalBytesWritten, inStreamSize);
@@ -304,9 +312,16 @@ public class DownloadEngine {
         try {
           Files.deleteIfExists(targetFilePath);
         } catch(Exception e2) {
-          log.debug("Cannot delete target file at: " + targetFilePath, e2);
+          log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
         }
         throw e;
+      }
+      if(DownloadStatus.ACTIVE.equals(job.getStatus())) {
+        try {
+          Files.deleteIfExists(targetFilePath);
+        } catch(Exception e) {
+          log.debug("Cannot delete target file (after cancel) at: " + targetFilePath, e);
+        }
       }
     }
 
@@ -319,7 +334,7 @@ public class DownloadEngine {
   // ---------------------------------------------------------------------------
 
   public void addListener(DownloadListener listener) {
-    log.trace("Adding listener: {}", listener);
+    log.debug("Adding listener to engine: {}", listener);
     this.getListeners().add(Objects.requireNonNull(listener));
   }
   public boolean removeListener(DownloadListener listener) {
@@ -416,10 +431,10 @@ public class DownloadEngine {
     this.myExecutorService = executorService;
   }
 
-  List<DownloadJob> getWaitingJobs() {
+  Queue<DownloadJob> getWaitingJobs() {
     return this.myWaitingJobs;
   }
-  void setWaitingJobs(List<DownloadJob> waitingJobs) {
+  void setWaitingJobs(Queue<DownloadJob> waitingJobs) {
     this.myWaitingJobs = waitingJobs;
   }
 
@@ -442,6 +457,17 @@ public class DownloadEngine {
   }
   void setShutdown(boolean shutdown) {
     this.stateShutdown = shutdown;
+  }
+
+  int getBufferSize() {
+    return this.myBufferSize;
+  }
+  void setBufferSize(int bufferSize) {
+    if(bufferSize < 1) {
+      throw new IllegalArgumentException("Parameter 'bufferSize' must be larger than 1");
+    } else {
+      this.myBufferSize = bufferSize;
+    }
   }
 
 }

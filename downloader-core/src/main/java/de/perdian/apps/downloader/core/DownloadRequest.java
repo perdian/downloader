@@ -34,7 +34,8 @@ public class DownloadRequest implements Serializable {
 
   static final long serialVersionUID = 1L;
 
-  private DownloadStreamFactory myStreamFactory = null;
+  private DownloadStreamFactory myContentFactory = null;
+  private DownloadStreamFactory myPreviewImageFactory = null;
   private String myId = null;
   private String myTitle = null;
   private String myTargetFileName = null;
@@ -46,7 +47,7 @@ public class DownloadRequest implements Serializable {
     result.append("[id=").append(this.getId());
     result.append(",title=").append(this.getTitle());
     result.append(",targetFileName=").append(this.getTargetFileName());
-    result.append(",streamFactory=").append(this.getStreamFactory());
+    result.append(",contentFactory=").append(this.getContentFactory());
     return result.append("]").toString();
   }
 
@@ -61,13 +62,6 @@ public class DownloadRequest implements Serializable {
     this.myId = id;
   }
 
-  public DownloadStreamFactory getStreamFactory() {
-    return this.myStreamFactory;
-  }
-  public void setStreamFactory(DownloadStreamFactory streamFactory) {
-    this.myStreamFactory = streamFactory;
-  }
-
   public String getTitle() {
     return this.myTitle;
   }
@@ -80,6 +74,20 @@ public class DownloadRequest implements Serializable {
   }
   public void setTargetFileName(String targetFileName) {
     this.myTargetFileName = targetFileName;
+  }
+
+  public DownloadStreamFactory getContentFactory() {
+    return this.myContentFactory;
+  }
+  public void setContentFactory(DownloadStreamFactory contentFactory) {
+    this.myContentFactory = contentFactory;
+  }
+
+  public DownloadStreamFactory getPreviewImageFactory() {
+    return this.myPreviewImageFactory;
+  }
+  public void setPreviewImageFactory(DownloadStreamFactory previewImageFactory) {
+    this.myPreviewImageFactory = previewImageFactory;
   }
 
 }

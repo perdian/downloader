@@ -61,7 +61,7 @@ public class TestMoveCompletedDownloadsListener {
     DownloadJob job = Mockito.mock(DownloadJob.class);
     Mockito.when(job.getCancelTime()).thenReturn(null);
     Mockito.when(job.getRequest()).thenReturn(request);
-    Mockito.when(job.getResult()).thenReturn(inFile);
+    Mockito.when(job.getTargetFile()).thenReturn(inFile);
 
     MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
     listener.jobCompleted(job);
@@ -86,7 +86,7 @@ public class TestMoveCompletedDownloadsListener {
     DownloadJob job = Mockito.mock(DownloadJob.class);
     Mockito.when(job.getCancelTime()).thenReturn(Long.valueOf(1L));
     Mockito.when(job.getRequest()).thenReturn(request);
-    Mockito.when(job.getResult()).thenReturn(inFile);
+    Mockito.when(job.getTargetFile()).thenReturn(inFile);
 
     MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
     listener.jobCompleted(job);

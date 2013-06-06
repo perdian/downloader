@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Objects;
 
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,16 +55,25 @@ public class DownloaderLauncher {
    */
   public DownloadEngine launch() {
 
+    log.trace("Installing JGoodies Look and Feel");
+    try {
+      UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
+    } catch(Exception e) {
+      log.warn("Cannot install JGoodies Look and Feel", e);
+    }
+
+    log.trace("Creating DownloadEngine");
     DownloadEngineBuilder engineBuilder = this.getEngineBuilder();
     DownloadEngine engine = engineBuilder.build();
 
     log.debug("Launching Downloader application");
-    DownloaderPanel applicationPanel = new DownloaderPanel();
+    DownloaderPanel applicationPanel = new DownloaderPanel(engine);
     JFrame applicationFrame = new JFrame();
+    applicationFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     applicationFrame.setContentPane(applicationPanel);
     applicationFrame.setMinimumSize(new Dimension(640, 480));
+    applicationFrame.setSize(new Dimension(800, 600));
     applicationFrame.setTitle("Downloader");
-    applicationFrame.pack();
     applicationFrame.setLocationRelativeTo(null);
     applicationFrame.setVisible(true);
 

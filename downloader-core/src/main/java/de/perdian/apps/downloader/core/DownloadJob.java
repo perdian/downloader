@@ -17,6 +17,7 @@ package de.perdian.apps.downloader.core;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,8 +37,9 @@ public class DownloadJob {
   private Long myStartTime = null;
   private Long myEndTime = null;
   private Long myCancelTime = null;
-  private Path myResult = null;
+  private Path myTargetFile = null;
   private Exception myError = null;
+  private int myPriority = 0;
   private List<DownloadProgressListener> myProgressListeners = new ArrayList<>();
 
   DownloadJob(DownloadEngine owner) {
@@ -48,8 +50,9 @@ public class DownloadJob {
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append(this.getClass().getSimpleName());
-    result.append("[request=").append(this.getRequest());
-    result.append(",status=").append(this.getStatus());
+    result.append("[status=").append(this.getStatus());
+    result.append(",targetFile=").append(this.getTargetFile());
+    result.append(",request=").append(this.getRequest());
     return result.append("]").toString();
   }
 
@@ -103,6 +106,35 @@ public class DownloadJob {
   }
   public boolean removeProgressListener(DownloadProgressListener progressListener) {
     return this.getProgressListeners().remove(progressListener);
+  }
+
+  // ---------------------------------------------------------------------------
+  // --- Inner classes ---------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  public static class PriorityComparator implements Comparator<DownloadJob> {
+
+    @Override
+    public int compare(DownloadJob o1, DownloadJob o2) {
+      if(o1 == null) {
+        return o2 == null ? 0 : -1;
+      } else if(o2 == null) {
+        return 1;
+      } else {
+        int p1 = o1.getPriority();
+        int p2 = o2.getPriority();
+        if(p1 == p2) {
+          if(o1.getScheduleTime() == o2.getScheduleTime()) {
+            return 0;
+          } else {
+            return o1.getScheduleTime() < o2.getScheduleTime() ? -1 : 1;
+          }
+        } else {
+          return p1 < p2 ? 1 : -1;
+        }
+      }
+    }
+
   }
 
   // ---------------------------------------------------------------------------
@@ -199,11 +231,22 @@ public class DownloadJob {
   /**
    * Gets the result path into which the content has been written
    */
-  public Path getResult() {
-    return this.myResult;
+  public Path getTargetFile() {
+    return this.myTargetFile;
   }
-  void setResult(Path result) {
-    this.myResult = result;
+  void setTargetFile(Path targetFile) {
+    this.myTargetFile = targetFile;
+  }
+
+  /**
+   * Gets the priority of the job. Jobs with higher priority will get picked up
+   * first by the engine.
+   */
+  public int getPriority() {
+    return this.myPriority;
+  }
+  public void setPriority(int priority) {
+    this.myPriority = priority;
   }
 
 }

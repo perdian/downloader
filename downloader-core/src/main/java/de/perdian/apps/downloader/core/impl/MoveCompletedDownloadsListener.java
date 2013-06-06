@@ -43,14 +43,22 @@ public class MoveCompletedDownloadsListener extends DownloadListenerSkeleton {
   }
 
   @Override
+  public String toString() {
+    StringBuilder result = new StringBuilder();
+    result.append(this.getClass().getSimpleName());
+    result.append("[targetDirectory=").append(this.getTargetDirectory());
+    return result.append("]").toString();
+  }
+
+  @Override
   public void jobCompleted(DownloadJob job) {
-    if(job.getResult() != null && job.getCancelTime() != null) {
+    if(job.getTargetFile() != null && job.getCancelTime() != null) {
       try {
-        Files.deleteIfExists(job.getResult());
+        Files.deleteIfExists(job.getTargetFile());
       } catch(Exception e) {
-        log.warn("Cannot delete file for cancelled download at: " + job.getResult(), e);
+        log.warn("Cannot delete file for cancelled download at: " + job.getTargetFile(), e);
       }
-    } else if(job.getResult() != null && Files.exists(job.getResult())) {
+    } else if(job.getTargetFile() != null && Files.exists(job.getTargetFile())) {
       Path targetFilePath = this.getTargetDirectory().resolve(job.getRequest().getTargetFileName());
       try {
 
@@ -59,12 +67,12 @@ public class MoveCompletedDownloadsListener extends DownloadListenerSkeleton {
           Files.createDirectory(targetFilePath.getParent());
         }
 
-        log.trace("Moving downloaded file from '{}' to '{}'", job.getResult(), targetFilePath);
-        Files.move(job.getResult(), targetFilePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        log.trace("Moving downloaded file from '{}' to '{}'", job.getTargetFile(), targetFilePath);
+        Files.move(job.getTargetFile(), targetFilePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
 
       } catch(Exception e) {
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append("Cannot move downloaded file from '").append(job.getResult());
+        errorMessage.append("Cannot move downloaded file from '").append(job.getTargetFile());
         errorMessage.append("' to '").append(targetFilePath).append("'");
         log.error(errorMessage.toString(), e);
       }
