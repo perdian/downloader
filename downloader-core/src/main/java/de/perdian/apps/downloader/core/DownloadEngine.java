@@ -230,7 +230,7 @@ public class DownloadEngine {
     Queue<DownloadJob> queue = this.getWaitingJobs();
     int maxJobsToRemove = this.getProcessorCount() - this.getActiveJobs().size();
     if(maxJobsToRemove > 0) {
-      List<DownloadJob> removedJobs = new ArrayList<DownloadJob>(maxJobsToRemove);
+      List<DownloadJob> removedJobs = new ArrayList<>(maxJobsToRemove);
       for(int i=0; i < maxJobsToRemove && !queue.isEmpty(); i++) {
         removedJobs.add(queue.remove());
       }
