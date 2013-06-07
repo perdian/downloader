@@ -60,11 +60,13 @@ public class DownloadEngine {
   private List<DownloadJob> myActiveJobs = new ArrayList<>();
 
   /**
-   * The engine is not supposed to be instantiated directly by client code.
-   * It should only be created using the {@code buildEngine} method provided by
-   * a {@link DownloadEngineBuilder} instance.
+   * Create a new engine
+   *
+   * @param targetDirectory
+   *   the directory into which the downloads will be written
    */
-  DownloadEngine() {
+  public DownloadEngine(Path targetDirectory) {
+    this.setTargetDirectory(Objects.requireNonNull(targetDirectory, "Parameter 'targetDirectory' must not be null!"));
   }
 
   /**

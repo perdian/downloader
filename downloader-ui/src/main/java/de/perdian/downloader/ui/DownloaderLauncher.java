@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
-import de.perdian.apps.downloader.core.DownloadEngineBuilder;
 
 /**
  * Launches the Downloader UI application
@@ -41,20 +40,16 @@ public class DownloaderLauncher {
   static final Logger log = LogManager.getLogger(DownloaderLauncher.class);
 
   private List<DownloaderLauncherAction> myActions = new CopyOnWriteArrayList<>();
-  private DownloadEngineBuilder myEngineBuilder = null;
+  private DownloadEngine myEngine = null;
 
-  public DownloaderLauncher(DownloadEngineBuilder engineBuilder) {
-    this.setEngineBuilder(Objects.requireNonNull(engineBuilder, "Parameter 'engineBuilder' must not be null"));
+  public DownloaderLauncher(DownloadEngine engine) {
+    this.setEngine(Objects.requireNonNull(engine, "Parameter 'engine' must not be null"));
   }
 
   /**
    * Launches the UI application
-   *
-   * @return
-   *   the underlying {@link DownloadEngine} that is used to actually perform
-   *   the logics requested by the UI
    */
-  public DownloadEngine launch() {
+  public void launch() {
 
     log.trace("Installing JGoodies Look and Feel");
     try {
@@ -63,12 +58,8 @@ public class DownloaderLauncher {
       log.warn("Cannot install JGoodies Look and Feel", e);
     }
 
-    log.trace("Creating DownloadEngine");
-    final DownloadEngineBuilder engineBuilder = this.getEngineBuilder();
-    final DownloadEngine engine = engineBuilder.build();
-
     log.debug("Launching Downloader application");
-    DownloaderPanel applicationPanel = new DownloaderPanel(engine);
+    DownloaderPanel applicationPanel = new DownloaderPanel(this.getEngine());
     JFrame applicationFrame = new JFrame();
     applicationFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     applicationFrame.setContentPane(applicationPanel);
@@ -87,7 +78,7 @@ public class DownloaderLauncher {
           @Override public void run() {
             try {
               log.debug("Executing action: {}", action);
-              action.execute(engine);
+              action.execute(DownloaderLauncher.this.getEngine());
             } catch(Exception e) {
               log.error("Cannot execute action: " + action, e);
             } finally {
@@ -106,7 +97,6 @@ public class DownloaderLauncher {
     }
 
     log.debug("Downloader application launch completed");
-    return engine;
 
   }
 
@@ -114,11 +104,11 @@ public class DownloaderLauncher {
   // --- Property access methods -----------------------------------------------
   // ---------------------------------------------------------------------------
 
-  public DownloadEngineBuilder getEngineBuilder() {
-    return this.myEngineBuilder;
+  public DownloadEngine getEngine() {
+    return this.myEngine;
   }
-  public void setEngineBuilder(DownloadEngineBuilder engineBuilder) {
-    this.myEngineBuilder = Objects.requireNonNull(engineBuilder, "Parameter 'engineBuilder' must not be null");
+  public void setEngine(DownloadEngine engine) {
+    this.myEngine = engine;
   }
 
   public void addAction(DownloaderLauncherAction action) {
