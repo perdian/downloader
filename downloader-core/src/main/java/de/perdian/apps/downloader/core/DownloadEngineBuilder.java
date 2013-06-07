@@ -42,7 +42,7 @@ public class DownloadEngineBuilder {
    */
   public DownloadEngine build() {
     if(this.getTargetDirectory() == null) {
-      throw new IllegalArgumentException("Property targetDirectory must not be null!");
+      throw new NullPointerException("Property targetDirectory must not be null!");
     } else if(this.getProcessorCount() <= 0) {
       throw new IllegalArgumentException("Property processorCount must be larger than 0! (Value found: " + this.getProcessorCount() + ")");
     } else {

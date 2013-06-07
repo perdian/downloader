@@ -15,19 +15,25 @@
  */
 package de.perdian.downloader.ui.info;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
+import de.perdian.downloader.ui.resources.Icons;
 
 /**
  * Displays information about the configured state of the engine itself and
@@ -40,37 +46,126 @@ public class InfoPanel extends JPanel {
 
   static final long serialVersionUID = 1L;
 
-  public InfoPanel(final DownloadEngine engine) {
+  private DownloadEngine myEngine = null;
+  private JLabel myProcessorInfoLabel = null;
+  private JButton myProcessorMinusButton = null;
+  private JButton myProcessorPlusButton = null;
 
-    final JSpinner processorCountSpinner = new JSpinner(new SpinnerNumberModel(engine.getProcessorCount(), 1, Integer.MAX_VALUE, 1));
-    processorCountSpinner.getModel().addChangeListener(new ChangeListener() {
-      @Override public void stateChanged(ChangeEvent e) {
-        new Thread(new Runnable() {
-          @Override public void run() {
-            engine.setProcessorCount(((Number)processorCountSpinner.getValue()).intValue());
-          }
-        }).start();
-      }
-    });
-    engine.addListener(new DownloadListenerSkeleton() {
-      @Override public void processorCountUpdated(final int newProcessorCount) {
-        SwingUtilities.invokeLater(new Runnable() {
-          @Override public void run() {
-            processorCountSpinner.setValue(Integer.valueOf(newProcessorCount));
-          }
-        });
-      }
-    });
+  public InfoPanel(final DownloadEngine engine) {
+    this.setEngine(engine);
+    engine.addListener(new InfoPanelDownloadListener());
+
+    JLabel processorInfoLabel = new JLabel(String.valueOf(engine.getProcessorCount()), SwingConstants.CENTER);
+    processorInfoLabel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY), Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu")));
+    this.setProcessorInfoLabel(processorInfoLabel);
+    JButton processorMinusButton = new JButton(new ProcessorUpdateAction(-1));
+    processorMinusButton.setEnabled(engine.getProcessorCount() > 1);
+    processorMinusButton.setIcon(Icons.createIcon("16/minus.png"));
+    this.setProcessorMinusButton(processorMinusButton);
+    JButton processorPlusButton = new JButton(new ProcessorUpdateAction(1));
+    processorPlusButton.setIcon(Icons.createIcon("16/plus.png"));
+    this.setProcessorPlusButton(processorPlusButton);
 
     CellConstraints cc = new CellConstraints();
+    FormLayout processorInfoLayout = new FormLayout("pref, 1dlu, fill:30px:grow, 1dlu, pref", "fill:pref");
+    processorInfoLayout.setColumnGroups(new int[][] { { 1, 5 } });
+    PanelBuilder processorInfoBuilder = new PanelBuilder(processorInfoLayout);
+    processorInfoBuilder.add(processorMinusButton, cc.xy(1, 1));
+    processorInfoBuilder.add(processorInfoLabel, cc.xy(3, 1));
+    processorInfoBuilder.add(processorPlusButton, cc.xy(5, 1));
+
     FormLayout layout = new FormLayout(
-      /* COLS */ "fill:default:grow, 6dlu, fill:min(75px;default)",
+      /* COLS */ "fill:default:grow, 6dlu, fill:min(100px;pref)",
       /* ROWS */ "pref"
     );
     PanelBuilder builder = new PanelBuilder(layout, this);
     builder.addLabel("Processors", cc.xywh(1, 1, 1, 1));
-    builder.add(processorCountSpinner, cc.xywh(3, 1, 1, 1));
+    builder.add(processorInfoBuilder.getPanel(), cc.xywh(3, 1, 1, 1));
 
+  }
+
+  // ---------------------------------------------------------------------------
+  // --- Inner classes ---------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  class InfoPanelDownloadListener extends DownloadListenerSkeleton {
+
+    @Override
+    public void processorCountUpdated(final int newProcessorCount) {
+      SwingUtilities.invokeLater(new Runnable() {
+        @Override public void run() {
+          InfoPanel.this.getProcessorInfoLabel().setText(String.valueOf(newProcessorCount));
+          InfoPanel.this.getProcessorMinusButton().setEnabled(newProcessorCount > 1);
+          InfoPanel.this.getProcessorPlusButton().setEnabled(newProcessorCount < Integer.MAX_VALUE - 1);
+        }
+      });
+    }
+
+  }
+
+  class ProcessorUpdateAction extends AbstractAction {
+
+    static final long serialVersionUID = 1L;
+
+    private int myDirection = 0;
+
+    public ProcessorUpdateAction(int direction) {
+      this.setDirection(direction);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      new Thread(new Runnable() {
+        @Override public void run() {
+          int newProcessorCount = InfoPanel.this.getEngine().getProcessorCount() + ProcessorUpdateAction.this.getDirection();
+          InfoPanel.this.getEngine().setProcessorCount(Math.max(1, newProcessorCount));
+        }
+      }).start();
+    }
+
+    // ---------------------------------------------------------------------------
+    // --- Property access methods -----------------------------------------------
+    // ---------------------------------------------------------------------------
+
+    int getDirection() {
+      return this.myDirection;
+    }
+    private void setDirection(int direction) {
+      this.myDirection = direction;
+    }
+
+  }
+
+  // ---------------------------------------------------------------------------
+  // --- Property access methods -----------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  DownloadEngine getEngine() {
+    return this.myEngine;
+  }
+  private void setEngine(DownloadEngine engine) {
+    this.myEngine = engine;
+  }
+
+  JLabel getProcessorInfoLabel() {
+    return this.myProcessorInfoLabel;
+  }
+  private void setProcessorInfoLabel(JLabel processorInfoLabel) {
+    this.myProcessorInfoLabel = processorInfoLabel;
+  }
+
+  JButton getProcessorMinusButton() {
+    return this.myProcessorMinusButton;
+  }
+  private void setProcessorMinusButton(JButton processorMinusButton) {
+    this.myProcessorMinusButton = processorMinusButton;
+  }
+
+  JButton getProcessorPlusButton() {
+    return this.myProcessorPlusButton;
+  }
+  private void setProcessorPlusButton(JButton processorPlusButton) {
+    this.myProcessorPlusButton = processorPlusButton;
   }
 
 }

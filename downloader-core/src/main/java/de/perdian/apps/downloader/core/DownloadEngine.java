@@ -28,9 +28,9 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,7 +58,6 @@ public class DownloadEngine {
   private int myProcessorCount = 1;
   private Queue<DownloadJob> myWaitingJobs = new PriorityQueue<>(10, new DownloadJob.PriorityComparator());
   private List<DownloadJob> myActiveJobs = new ArrayList<>();
-  private boolean stateShutdown = false;
 
   /**
    * The engine is not supposed to be instantiated directly by client code.
@@ -82,14 +81,12 @@ public class DownloadEngine {
    *   rejected the job and will not execute the transfer process.
    */
   public DownloadJob submit(DownloadRequest request) {
-    if(this.isShutdown()) {
-      throw new IllegalStateException(DownloadEngine.class.getSimpleName() + " is shutdown!");
-    } else if(request == null) {
-      throw new IllegalArgumentException("Parameter 'request' must not be null!");
+    if(request == null) {
+      throw new NullPointerException("Parameter 'request' must not be null!");
     } else if(request.getTargetFileName() == null) {
-      throw new IllegalArgumentException("Property 'targetFileName' of request must not be null!");
+      throw new NullPointerException("Property 'targetFileName' of request must not be null!");
     } else if(request.getContentFactory() == null) {
-      throw new IllegalArgumentException("Property 'contentFactory' of request must not be null!");
+      throw new NullPointerException("Property 'contentFactory' of request must not be null!");
     } else {
 
       // First we contact all the validators and make sure the new request might
@@ -144,41 +141,34 @@ public class DownloadEngine {
   }
 
   /**
-   * Shutdown the current engine, which means execute all remaining jobs that
-   * are currently active but do not accept any further jobs to be added to this
-   * engine.
+   * Removes all currently queued jobs
    *
    * @return
-   *   the list of currently waiting jobs which are not going to be executed
-   *   any more
+   *   the jobs that were cleared from this engine
    */
-  public synchronized List<DownloadJob> shutdown() {
-    if(!this.isShutdown()) {
-      this.setShutdown(true);
-      this.getExecutorService().shutdown();
-    }
-    return Collections.unmodifiableList(new ArrayList<>(this.getWaitingJobs()));
+  public synchronized List<DownloadJob> clearWaitingJobs() {
+    List<DownloadJob> resultList = new ArrayList<>(this.getWaitingJobs());
+    this.getWaitingJobs().clear();
+    return Collections.unmodifiableList(resultList);
   }
 
   /**
-   * Shutdown the current engine, which means execute all remaining jobs that
-   * are currently active but do not accept any further jobs to be added to this
-   * engine. Also wait until all remaining jobs have been completed.
-   *
-   * @return
-   *   the list of currently waiting jobs which are not going to be executed
-   *   any more
+   * Wait until all jobs currently executing and waiting inside this executor
+   * have been completed
    */
-  public List<DownloadJob> shutdownAndWait() {
-    if(!this.isShutdown()) {
-      this.shutdown();
-      try {
-        this.getExecutorService().awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-      } catch(InterruptedException e) {
-        log.warn("Cannot wait for shutdown of ExecutorService", e);
+  public void waitUntilAllDownloadsCompleted() throws InterruptedException {
+    final CountDownLatch latch = new CountDownLatch(1);
+    this.addListener(new DownloadListenerSkeleton() {
+      @Override public void jobCompleted(DownloadJob job) {
+        synchronized(DownloadEngine.this) {
+          if(!DownloadEngine.this.isBusy()) {
+            DownloadEngine.this.removeListener(this);
+            latch.countDown();
+          }
+        }
       }
-    }
-    return Collections.unmodifiableList(new ArrayList<>(this.getWaitingJobs()));
+    });
+    latch.await();
   }
 
   // ---------------------------------------------------------------------------
@@ -186,7 +176,7 @@ public class DownloadEngine {
   // ---------------------------------------------------------------------------
 
   synchronized boolean startJob(final DownloadJob job, boolean ignoreSlots) {
-    if(!this.isShutdown() && (ignoreSlots || this.getProcessorCount() > this.getActiveJobs().size())) {
+    if(ignoreSlots || this.getProcessorCount() > this.getActiveJobs().size()) {
 
       // Make sure we remove the job from the waiting list, so no matter from
       // where we come from we always leave in a consistent state
@@ -237,7 +227,7 @@ public class DownloadEngine {
   }
 
   synchronized void checkWaitingJobs() {
-    while(!this.isShutdown() && !this.getWaitingJobs().isEmpty()) {
+    while(!this.getWaitingJobs().isEmpty()) {
       if(this.getActiveJobs().size() >= this.getProcessorCount()) {
         return;
       } else {
@@ -264,13 +254,6 @@ public class DownloadEngine {
       log.info("Exception occured during job execution: " + job, e);
     } finally {
       try {
-
-        // Update the job itself
-        this.fireJobCompleted(job);
-
-      } finally {
-
-        // Make sure the engine itself remains in a consistent state
         synchronized(this) {
 
           // Make sure the job is removed from the list of currently active jobs
@@ -281,6 +264,10 @@ public class DownloadEngine {
           this.checkWaitingJobs();
 
         }
+      } finally {
+
+        // Update the job itself
+        this.fireJobCompleted(job);
 
       }
     }
@@ -450,13 +437,6 @@ public class DownloadEngine {
   }
   void setTargetDirectory(Path targetDirectory) {
     this.myTargetDirectory = targetDirectory;
-  }
-
-  boolean isShutdown() {
-    return this.stateShutdown;
-  }
-  void setShutdown(boolean shutdown) {
-    this.stateShutdown = shutdown;
   }
 
   int getBufferSize() {

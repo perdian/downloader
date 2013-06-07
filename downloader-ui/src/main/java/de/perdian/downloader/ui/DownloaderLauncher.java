@@ -16,7 +16,6 @@
 package de.perdian.downloader.ui;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.util.Objects;
 
 import javax.swing.JFrame;
@@ -27,6 +26,8 @@ import org.apache.logging.log4j.Logger;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadEngineBuilder;
+import de.perdian.apps.downloader.core.DownloadJob;
+import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
 
 /**
  * Launches the Downloader UI application
@@ -36,14 +37,13 @@ import de.perdian.apps.downloader.core.DownloadEngineBuilder;
 
 public class DownloaderLauncher {
 
-  private static final Logger log = LogManager.getLogger(DownloaderLauncher.class);
+  static final Logger log = LogManager.getLogger(DownloaderLauncher.class);
 
   private DownloadEngineBuilder myEngineBuilder = null;
+  private boolean stateExitAfterDownloadsCompleted = true;
 
-  public DownloaderLauncher() {
-    DownloadEngineBuilder engineBuilder = new DownloadEngineBuilder();
-    engineBuilder.setTargetDirectory(new File(System.getProperty("user.home"), ".downloader/").toPath());
-    this.setEngineBuilder(engineBuilder);
+  public DownloaderLauncher(DownloadEngineBuilder engineBuilder) {
+    this.setEngineBuilder(Objects.requireNonNull(engineBuilder, "Parameter 'engineBuilder' must not be null"));
   }
 
   /**
@@ -65,6 +65,9 @@ public class DownloaderLauncher {
     log.trace("Creating DownloadEngine");
     DownloadEngineBuilder engineBuilder = this.getEngineBuilder();
     DownloadEngine engine = engineBuilder.build();
+    if(this.isExitAfterDownloadsCompleted()) {
+      engine.addListener(new SystemExitIfNoLongerBusyListener());
+    }
 
     log.debug("Launching Downloader application");
     DownloaderPanel applicationPanel = new DownloaderPanel(engine);
@@ -83,6 +86,22 @@ public class DownloaderLauncher {
   }
 
   // ---------------------------------------------------------------------------
+  // --- Inner classes ---------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  static class SystemExitIfNoLongerBusyListener extends DownloadListenerSkeleton {
+
+    @Override
+    public void jobCompleted(DownloadJob job) {
+      if(!job.getOwner().isBusy()) {
+        log.info("Exit application");
+        System.exit(0);
+      }
+    }
+
+  }
+
+  // ---------------------------------------------------------------------------
   // --- Property access methods -----------------------------------------------
   // ---------------------------------------------------------------------------
 
@@ -91,6 +110,13 @@ public class DownloaderLauncher {
   }
   public void setEngineBuilder(DownloadEngineBuilder engineBuilder) {
     this.myEngineBuilder = Objects.requireNonNull(engineBuilder, "Parameter 'engineBuilder' must not be null");
+  }
+
+  public boolean isExitAfterDownloadsCompleted() {
+    return this.stateExitAfterDownloadsCompleted;
+  }
+  public void setExitAfterDownloadsCompleted(boolean exitAfterDownloadsCompleted) {
+    this.stateExitAfterDownloadsCompleted = exitAfterDownloadsCompleted;
   }
 
 }

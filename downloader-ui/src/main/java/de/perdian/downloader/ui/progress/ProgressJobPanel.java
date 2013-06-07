@@ -15,13 +15,17 @@
  */
 package de.perdian.downloader.ui.progress;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -34,6 +38,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadProgressListener;
+import de.perdian.downloader.ui.resources.Icons;
+import de.perdian.downloader.ui.support.LazyLoadingIconPanel;
 
 class ProgressJobPanel extends JPanel {
 
@@ -46,6 +52,9 @@ class ProgressJobPanel extends JPanel {
 
   ProgressJobPanel(final DownloadJob job) {
 
+    JComponent iconPanel = new LazyLoadingIconPanel(job.getRequest().getPreviewImageFactory(), new Dimension(110, 90));
+    iconPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
     JLabel titleLabel = new JLabel(job.getRequest().getTitle() == null ? "No title" : job.getRequest().getTitle());
     titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 
@@ -55,7 +64,6 @@ class ProgressJobPanel extends JPanel {
 
     JProgressBar progressBar = new JProgressBar();
     progressBar.setIndeterminate(true);
-    progressBar.setStringPainted(true);
     this.setProgressBar(progressBar);
 
     JButton cancelButton = new JButton(new AbstractAction("Cancel") {
@@ -65,6 +73,10 @@ class ProgressJobPanel extends JPanel {
         job.cancel();
       }
     });
+    cancelButton.setIcon(Icons.createIcon("16/cancel.png"));
+    cancelButton.setHorizontalTextPosition(SwingConstants.CENTER);
+    cancelButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+    cancelButton.setPreferredSize(new Dimension(70, 70));
     this.setCancelButton(cancelButton);
 
     CellConstraints cc = new CellConstraints();
@@ -80,14 +92,15 @@ class ProgressJobPanel extends JPanel {
 
     FormLayout layout = new FormLayout(
       /* COLS */ "fill:default, 4dlu, fill:0px:grow, 4dlu, pref",
-      /* ROWS */ "pref, pref, 4dlu, fill:30px, 1dlu, pref"
+      /* ROWS */ "pref, pref, 4dlu, fill:30px:grow, 1dlu, pref"
     );
     PanelBuilder builder = new PanelBuilder(layout, this);
+    builder.add(iconPanel, cc.xywh(1, 1, 1, 6));
     builder.add(titleLabel, cc.xywh(3, 1, 3, 1));
     builder.add(fileNameLabel, cc.xywh(3, 2, 3, 1));
-    builder.add(cancelButton, cc.xywh(5, 4, 1, 3));
     builder.add(progressBar, cc.xywh(3, 4, 1, 1));
     builder.add(progressInfoPanel, cc.xywh(3, 6, 1, 1));
+    builder.add(cancelButton, cc.xywh(5, 4, 1, 3));
 
     job.addProgressListener(new ProgressJobPanelProgressListener());
 
@@ -138,6 +151,7 @@ class ProgressJobPanel extends JPanel {
 
             JProgressBar progressBar = ProgressJobPanel.this.getProgressBar();
             progressBar.setIndeterminate(false);
+            progressBar.setStringPainted(true);
             progressBar.setMaximum((int)totalBytes);
             progressBar.setValue((int)bytesWritten);
             progressBar.repaint();

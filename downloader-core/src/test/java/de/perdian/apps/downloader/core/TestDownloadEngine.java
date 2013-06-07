@@ -71,7 +71,7 @@ public class TestDownloadEngine {
     engine.addListener(listener);
     DownloadJob job = engine.submit(request);
     job.addProgressListener(progressListener);
-    engine.shutdownAndWait();
+    engine.waitUntilAllDownloadsCompleted();
 
     Assert.assertNull(job.getCancelTime());
     Assert.assertNotNull(job.getEndTime());
@@ -109,7 +109,7 @@ public class TestDownloadEngine {
     engine.addListener(listener);
     DownloadJob job = engine.submit(request);
     job.addProgressListener(progressListener);
-    engine.shutdownAndWait();
+    engine.waitUntilAllDownloadsCompleted();
 
     Assert.assertNull(job.getCancelTime());
     Assert.assertNotNull(job.getEndTime());
@@ -142,16 +142,6 @@ public class TestDownloadEngine {
     request.setContentFactory(null);
     request.setTargetFileName("targetFileName");
     DownloadEngine engine = this.getEngineBuilder().build();
-    engine.submit(request);
-  }
-
-  @Test(expected=IllegalStateException.class)
-  public void submitWhenShutdown() {
-    DownloadRequest request = new DownloadRequest();
-    request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
-    request.setTargetFileName("targetFileName");
-    DownloadEngine engine = this.getEngineBuilder().build();
-    engine.shutdown();
     engine.submit(request);
   }
 
