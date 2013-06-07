@@ -316,7 +316,7 @@ public class DownloadEngine {
         }
         throw e;
       }
-      if(DownloadStatus.ACTIVE.equals(job.getStatus())) {
+      if(!DownloadStatus.ACTIVE.equals(job.getStatus())) {
         try {
           Files.deleteIfExists(targetFilePath);
         } catch(Exception e) {
