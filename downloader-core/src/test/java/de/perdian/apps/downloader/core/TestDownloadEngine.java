@@ -127,7 +127,7 @@ public class TestDownloadEngine {
 
   }
 
-  @Test(expected=IllegalArgumentException.class)
+  @Test(expected=NullPointerException.class)
   public void submitWithNullTargetFileName() {
     DownloadRequest request = new DownloadRequest();
     request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
@@ -136,7 +136,7 @@ public class TestDownloadEngine {
     engine.submit(request);
   }
 
-  @Test(expected=IllegalArgumentException.class)
+  @Test(expected=NullPointerException.class)
   public void submitWithNullContentFactory() {
     DownloadRequest request = new DownloadRequest();
     request.setContentFactory(null);

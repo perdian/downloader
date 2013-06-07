@@ -227,12 +227,14 @@ public class DownloadEngine {
   }
 
   synchronized void checkWaitingJobs() {
-    while(!this.getWaitingJobs().isEmpty()) {
-      if(this.getActiveJobs().size() >= this.getProcessorCount()) {
-        return;
-      } else {
-        this.startJob(this.getWaitingJobs().remove(), false);
-      }
+    Queue<DownloadJob> queue = this.getWaitingJobs();
+    int maxJobsToRemove = this.getProcessorCount() - this.getActiveJobs().size();
+    List<DownloadJob> removedJobs = new ArrayList<DownloadJob>(maxJobsToRemove);
+    for(int i=0; i < maxJobsToRemove && !queue.isEmpty(); i++) {
+      removedJobs.add(queue.remove());
+    }
+    for(DownloadJob job : removedJobs) {
+      this.startJob(job, false);
     }
   }
 
