@@ -77,7 +77,7 @@ class ProgressJobPanel extends JPanel {
     cancelButton.setIcon(Icons.createIcon("16/cancel.png"));
     cancelButton.setHorizontalTextPosition(SwingConstants.CENTER);
     cancelButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-    cancelButton.setPreferredSize(new Dimension(70, 70));
+    cancelButton.setPreferredSize(new Dimension(70, 50));
     this.setCancelButton(cancelButton);
 
     CellConstraints cc = new CellConstraints();

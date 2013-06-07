@@ -61,45 +61,41 @@ public abstract class AbstractListPanel<T, C extends JComponent> extends JPanel 
   protected abstract C createItemPanel(T item);
 
   public void insertItem(T item) {
-
     final C itemPanel = this.createItemPanel(item);
-
     synchronized(this) {
 
       this.getItemPanelMap().put(item, itemPanel);
-
-      // Make sure the wrapper panel is visible
-      if(this.getListWrapperPanel() == null) {
-
-        JPanel dummyPanel = new JPanel();
-        GridBagConstraints dummyConstraints = new GridBagConstraints();
-        dummyConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        dummyConstraints.gridheight = GridBagConstraints.REMAINDER;
-        dummyConstraints.fill = GridBagConstraints.VERTICAL;
-        dummyConstraints.weighty = 1d;
-        JPanel listWrapperPanel = new JPanel(new GridBagLayout());
-        listWrapperPanel.add(dummyPanel, dummyConstraints);
-        this.setListWrapperPanel(listWrapperPanel);
-
-        JScrollPane listWrapperScroller = new JScrollPane(listWrapperPanel);
-        listWrapperScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        listWrapperScroller.setBorder(null);
-        listWrapperScroller.getVerticalScrollBar().setUnitIncrement(20);
-        this.updateContent(listWrapperScroller);
-
-      }
 
       // Now add the new job to the wrapper panel
       SwingUtilities.invokeLater(new Runnable() {
         @Override public void run() {
           synchronized(AbstractListPanel.this) {
+            JPanel listWrapperPanel = AbstractListPanel.this.getListWrapperPanel();
+            if(listWrapperPanel == null) {
+
+              JPanel dummyPanel = new JPanel();
+              GridBagConstraints dummyConstraints = new GridBagConstraints();
+              dummyConstraints.gridwidth = GridBagConstraints.REMAINDER;
+              dummyConstraints.gridheight = GridBagConstraints.REMAINDER;
+              dummyConstraints.fill = GridBagConstraints.VERTICAL;
+              dummyConstraints.weighty = 1d;
+              listWrapperPanel = new JPanel(new GridBagLayout());
+              listWrapperPanel.add(dummyPanel, dummyConstraints);
+              AbstractListPanel.this.setListWrapperPanel(listWrapperPanel);
+
+              JScrollPane listWrapperScroller = new JScrollPane(listWrapperPanel);
+              listWrapperScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+              listWrapperScroller.setBorder(null);
+              listWrapperScroller.getVerticalScrollBar().setUnitIncrement(20);
+              AbstractListPanel.this.updateContentWithinEventDispatcherThread(listWrapperScroller);
+
+            }
 
             GridBagConstraints itemPanelConstraints = new GridBagConstraints();
             itemPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
             itemPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
             itemPanelConstraints.weightx = 1d;
 
-            JPanel listWrapperPanel = AbstractListPanel.this.getListWrapperPanel();
             listWrapperPanel.add(itemPanel, itemPanelConstraints, listWrapperPanel.getComponentCount() - 1);
             listWrapperPanel.revalidate();
             listWrapperPanel.repaint();
@@ -137,13 +133,17 @@ public abstract class AbstractListPanel<T, C extends JComponent> extends JPanel 
   // --- Helper methods --------------------------------------------------------
   // ---------------------------------------------------------------------------
 
+  void updateContentWithinEventDispatcherThread(JComponent component) {
+    AbstractListPanel.this.removeAll();
+    AbstractListPanel.this.add(component, BorderLayout.CENTER);
+    AbstractListPanel.this.revalidate();
+    AbstractListPanel.this.repaint();
+  }
+
   void updateContent(final JComponent component) {
     SwingUtilities.invokeLater(new Runnable() {
       @Override public void run() {
-        AbstractListPanel.this.removeAll();
-        AbstractListPanel.this.add(component, BorderLayout.CENTER);
-        AbstractListPanel.this.revalidate();
-        AbstractListPanel.this.repaint();
+        AbstractListPanel.this.updateContentWithinEventDispatcherThread(component);
       }
     });
   }

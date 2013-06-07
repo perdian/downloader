@@ -156,19 +156,23 @@ public class DownloadEngine {
    * Wait until all jobs currently executing and waiting inside this executor
    * have been completed
    */
-  public void waitUntilAllDownloadsCompleted() throws InterruptedException {
-    final CountDownLatch latch = new CountDownLatch(1);
-    this.addListener(new DownloadListenerSkeleton() {
-      @Override public void jobCompleted(DownloadJob job) {
-        synchronized(DownloadEngine.this) {
-          if(!DownloadEngine.this.isBusy()) {
-            DownloadEngine.this.removeListener(this);
-            latch.countDown();
+  public void waitUntilAllDownloadsComplete() {
+    try {
+      final CountDownLatch latch = new CountDownLatch(1);
+      this.addListener(new DownloadListenerSkeleton() {
+        @Override public void jobCompleted(DownloadJob job) {
+          synchronized(DownloadEngine.this) {
+            if(!DownloadEngine.this.isBusy()) {
+              DownloadEngine.this.removeListener(this);
+              latch.countDown();
+            }
           }
         }
-      }
-    });
-    latch.await();
+      });
+      latch.await();
+    } catch(InterruptedException e) {
+      // Ignore here
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -244,7 +248,7 @@ public class DownloadEngine {
       this.runJobTransfer(job);
       job.setEndTime(System.currentTimeMillis());
       job.setStatus(DownloadStatus.COMPLETED);
-      log.info("Job completed successfully: {}", job);
+      log.info("Job completed: {} in {} ms", job.getStatus(), (job.getEndTime() - job.getStartTime()));
     } catch(Exception e) {
       job.setEndTime(System.currentTimeMillis());
       job.setError(e);
@@ -280,26 +284,27 @@ public class DownloadEngine {
     job.setTargetFile(targetFilePath);
     this.fireJobStarted(job);
 
-    long inStreamSize = job.getRequest().getContentFactory().size();
-
-    try(InputStream inStream = job.getRequest().getContentFactory().openStream()) {
-      try(OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
-        long totalBytesWritten = 0;
-        byte[] buffer = new byte[this.getBufferSize()];
-        for(int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadStatus.ACTIVE.equals(job.getStatus()); bufferSize = inStream.read(buffer)) {
-          outStream.write(buffer, 0, bufferSize);
-          totalBytesWritten += bufferSize;
-          job.fireProgress(totalBytesWritten, inStreamSize);
+    if(DownloadStatus.ACTIVE.equals(job.getStatus())) {
+      long inStreamSize = job.getRequest().getContentFactory().size();
+      try(InputStream inStream = job.getRequest().getContentFactory().openStream()) {
+        try(OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
+          long totalBytesWritten = 0;
+          byte[] buffer = new byte[this.getBufferSize()];
+          for(int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadStatus.ACTIVE.equals(job.getStatus()); bufferSize = inStream.read(buffer)) {
+            outStream.write(buffer, 0, bufferSize);
+            totalBytesWritten += bufferSize;
+            job.fireProgress(totalBytesWritten, inStreamSize);
+          }
+          outStream.flush();
+        } catch(final Exception e) {
+          log.warn("Error occured during file transfer [" + job + "]", e);
+          try {
+            Files.deleteIfExists(targetFilePath);
+          } catch(Exception e2) {
+            log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
+          }
+          throw e;
         }
-        outStream.flush();
-      } catch(final Exception e) {
-        log.warn("Error occured during file transfer [" + job + "]", e);
-        try {
-          Files.deleteIfExists(targetFilePath);
-        } catch(Exception e2) {
-          log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
-        }
-        throw e;
       }
       if(!DownloadStatus.ACTIVE.equals(job.getStatus())) {
         try {

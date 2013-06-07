@@ -16,6 +16,9 @@
 package de.perdian.apps.downloader.core;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Builder from which a {@link DownloadEngine} can be obtained. The builder
@@ -32,6 +35,7 @@ public class DownloadEngineBuilder {
 
   private int myProcessorCount = 1;
   private Path myTargetDirectory = null;
+  private List<DownloadListener> myListeners = new ArrayList<DownloadListener>();
 
   /**
    * Creates a new engine implementation that is configured with the information
@@ -49,6 +53,7 @@ public class DownloadEngineBuilder {
       DownloadEngine engine = new DownloadEngine();
       engine.setProcessorCount(this.getProcessorCount());
       engine.setTargetDirectory(this.getTargetDirectory());
+      engine.getListeners().addAll(this.getListeners());
       return engine;
     }
   }
@@ -69,6 +74,16 @@ public class DownloadEngineBuilder {
   }
   public void setTargetDirectory(Path targetDirectory) {
     this.myTargetDirectory = targetDirectory;
+  }
+
+  public void addListener(DownloadListener listener) {
+    this.getListeners().add(listener);
+  }
+  public List<DownloadListener> getListeners() {
+    return this.myListeners;
+  }
+  public void setListeners(List<DownloadListener> listeners) {
+    this.myListeners = Objects.requireNonNull(listeners, "Parameter listeners must not be null!");
   }
 
 }

@@ -71,7 +71,7 @@ public class TestDownloadEngine {
     engine.addListener(listener);
     DownloadJob job = engine.submit(request);
     job.addProgressListener(progressListener);
-    engine.waitUntilAllDownloadsCompleted();
+    engine.waitUntilAllDownloadsComplete();
 
     Assert.assertNull(job.getCancelTime());
     Assert.assertNotNull(job.getEndTime());
@@ -109,7 +109,7 @@ public class TestDownloadEngine {
     engine.addListener(listener);
     DownloadJob job = engine.submit(request);
     job.addProgressListener(progressListener);
-    engine.waitUntilAllDownloadsCompleted();
+    engine.waitUntilAllDownloadsComplete();
 
     Assert.assertNull(job.getCancelTime());
     Assert.assertNotNull(job.getEndTime());

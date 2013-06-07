@@ -16,7 +16,10 @@
 package de.perdian.downloader.ui;
 
 import java.awt.Dimension;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JFrame;
 import javax.swing.UIManager;
@@ -26,8 +29,6 @@ import org.apache.logging.log4j.Logger;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadEngineBuilder;
-import de.perdian.apps.downloader.core.DownloadJob;
-import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
 
 /**
  * Launches the Downloader UI application
@@ -39,8 +40,8 @@ public class DownloaderLauncher {
 
   static final Logger log = LogManager.getLogger(DownloaderLauncher.class);
 
+  private List<DownloaderLauncherAction> myActions = new CopyOnWriteArrayList<>();
   private DownloadEngineBuilder myEngineBuilder = null;
-  private boolean stateExitAfterDownloadsCompleted = true;
 
   public DownloaderLauncher(DownloadEngineBuilder engineBuilder) {
     this.setEngineBuilder(Objects.requireNonNull(engineBuilder, "Parameter 'engineBuilder' must not be null"));
@@ -63,11 +64,8 @@ public class DownloaderLauncher {
     }
 
     log.trace("Creating DownloadEngine");
-    DownloadEngineBuilder engineBuilder = this.getEngineBuilder();
-    DownloadEngine engine = engineBuilder.build();
-    if(this.isExitAfterDownloadsCompleted()) {
-      engine.addListener(new SystemExitIfNoLongerBusyListener());
-    }
+    final DownloadEngineBuilder engineBuilder = this.getEngineBuilder();
+    final DownloadEngine engine = engineBuilder.build();
 
     log.debug("Launching Downloader application");
     DownloaderPanel applicationPanel = new DownloaderPanel(engine);
@@ -80,24 +78,35 @@ public class DownloaderLauncher {
     applicationFrame.setLocationRelativeTo(null);
     applicationFrame.setVisible(true);
 
-    log.debug("Downloader application launch completed");
-    return engine;
-
-  }
-
-  // ---------------------------------------------------------------------------
-  // --- Inner classes ---------------------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  static class SystemExitIfNoLongerBusyListener extends DownloadListenerSkeleton {
-
-    @Override
-    public void jobCompleted(DownloadJob job) {
-      if(!job.getOwner().isBusy()) {
-        log.info("Exit application");
-        System.exit(0);
+    List<DownloaderLauncherAction> actions = this.getActions();
+    if(actions != null && actions.size() > 0) {
+      log.debug("Executing {} actions", actions.size());
+      final CountDownLatch latch = new CountDownLatch(actions.size());
+      for(final DownloaderLauncherAction action : actions) {
+        Thread actionThread = new Thread(new Runnable() {
+          @Override public void run() {
+            try {
+              log.debug("Executing action: {}", action);
+              action.execute(engine);
+            } catch(Exception e) {
+              log.error("Cannot execute action: " + action, e);
+            } finally {
+              latch.countDown();
+            }
+          }
+        });
+        actionThread.setName(DownloaderLauncherAction.class.getSimpleName() + "[" + action + "]");
+        actionThread.start();
+      }
+      try {
+        latch.await();
+      } catch(InterruptedException e) {
+        // Ignore here
       }
     }
+
+    log.debug("Downloader application launch completed");
+    return engine;
 
   }
 
@@ -112,11 +121,14 @@ public class DownloaderLauncher {
     this.myEngineBuilder = Objects.requireNonNull(engineBuilder, "Parameter 'engineBuilder' must not be null");
   }
 
-  public boolean isExitAfterDownloadsCompleted() {
-    return this.stateExitAfterDownloadsCompleted;
+  public void addAction(DownloaderLauncherAction action) {
+    this.getActions().add(action);
   }
-  public void setExitAfterDownloadsCompleted(boolean exitAfterDownloadsCompleted) {
-    this.stateExitAfterDownloadsCompleted = exitAfterDownloadsCompleted;
+  List<DownloaderLauncherAction> getActions() {
+    return this.myActions;
+  }
+  void setActions(List<DownloaderLauncherAction> actions) {
+    this.myActions = actions;
   }
 
 }
