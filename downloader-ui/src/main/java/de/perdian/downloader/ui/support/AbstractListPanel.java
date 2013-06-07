@@ -29,8 +29,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.jgoodies.forms.factories.Borders;
-
 import de.perdian.apps.downloader.core.DownloadJob;
 
 /**
@@ -65,7 +63,6 @@ public abstract class AbstractListPanel<T, C extends JComponent> extends JPanel 
   public void insertItem(T item) {
 
     final C itemPanel = this.createItemPanel(item);
-    itemPanel.setBorder(Borders.createEmptyBorder("2dlu, 0, 4dlu, 4dlu"));
 
     synchronized(this) {
 

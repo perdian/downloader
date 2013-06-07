@@ -51,13 +51,14 @@ public class LazyLoadingIconPanel extends JPanel {
 
   static final Logger log = LogManager.getLogger(LazyLoadingIconPanel.class);
   static final long serialVersionUID = 1L;
+  static final Executor DEFAULT_EXECUTOR = Executors.newFixedThreadPool(10);
 
   private DownloadStreamFactory myStreamFactory = null;
   private Executor myExecutor = null;
   private boolean stateLoadRequested = false;
 
   public LazyLoadingIconPanel(DownloadStreamFactory streamFactory, Dimension size) {
-    this(streamFactory, size, Executors.newSingleThreadExecutor());
+    this(streamFactory, size, DEFAULT_EXECUTOR);
   }
 
   public LazyLoadingIconPanel(DownloadStreamFactory streamFactory, Dimension size, Executor executor) {

@@ -15,6 +15,8 @@
  */
 package de.perdian.downloader.ui.queue;
 
+import com.jgoodies.forms.factories.Borders;
+
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
@@ -41,7 +43,9 @@ public class QueuePanel extends AbstractListPanel<DownloadJob, QueueJobPanel> {
 
   @Override
   protected QueueJobPanel createItemPanel(DownloadJob job) {
-    return new QueueJobPanel(job);
+    QueueJobPanel jobPanel = new QueueJobPanel(job);
+    jobPanel.setBorder(Borders.createEmptyBorder("1dlu, 0, 2dlu, 4dlu"));
+    return jobPanel;
   }
 
   // ---------------------------------------------------------------------------

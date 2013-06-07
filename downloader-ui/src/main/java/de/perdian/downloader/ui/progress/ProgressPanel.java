@@ -15,6 +15,8 @@
  */
 package de.perdian.downloader.ui.progress;
 
+import com.jgoodies.forms.factories.Borders;
+
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
@@ -41,7 +43,9 @@ public class ProgressPanel extends AbstractListPanel<DownloadJob, ProgressJobPan
 
   @Override
   protected ProgressJobPanel createItemPanel(DownloadJob item) {
-    return new ProgressJobPanel(item);
+    ProgressJobPanel jobPanel = new ProgressJobPanel(item);
+    jobPanel.setBorder(Borders.createEmptyBorder("2dlu, 0, 4dlu, 4dlu"));
+    return jobPanel;
   }
 
   // ---------------------------------------------------------------------------

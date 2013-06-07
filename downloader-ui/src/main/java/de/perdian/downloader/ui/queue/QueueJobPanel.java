@@ -15,6 +15,13 @@
  */
 package de.perdian.downloader.ui.queue;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -23,6 +30,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadJob;
+import de.perdian.downloader.ui.resources.Icons;
+import de.perdian.downloader.ui.support.LazyLoadingIconPanel;
 
 /**
  * Represents a single job within the queue panel
@@ -34,31 +43,49 @@ class QueueJobPanel extends JPanel {
 
   static final long serialVersionUID = 1L;
 
-  private DownloadJob myJob = null;
+  QueueJobPanel(final DownloadJob job) {
 
-  QueueJobPanel(DownloadJob job) {
-    this.setJob(job);
+    LazyLoadingIconPanel iconPanel = new LazyLoadingIconPanel(job.getRequest().getPreviewImageFactory(), new Dimension(70, 60));
+    iconPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+    JButton forceStartButton = new JButton(new AbstractAction() {
+      static final long serialVersionUID = 1L;
+      @Override public void actionPerformed(ActionEvent e) {
+        ((JButton)e.getSource()).setEnabled(false);
+        job.forceStart();
+      }
+    });
+    forceStartButton.setFocusable(false);
+    forceStartButton.setIcon(Icons.createIcon("16/play.png"));
+    forceStartButton.setToolTipText("Force start");
+    JButton cancelButton = new JButton(new AbstractAction() {
+      static final long serialVersionUID = 1L;
+      @Override public void actionPerformed(ActionEvent e) {
+        ((JButton)e.getSource()).setEnabled(false);
+        job.cancel();
+      }
+    });
+    cancelButton.setFocusable(false);
+    cancelButton.setIcon(Icons.createIcon("16/cancel.png"));
+    cancelButton.setToolTipText("Cancel");
 
     CellConstraints cc = new CellConstraints();
+    FormLayout buttonLayout = new FormLayout("fill:pref:grow, 4dlu, fill:pref:grow", "fill:pref:grow");
+    buttonLayout.setColumnGroups(new int[][] { { 1, 3 } });
+    PanelBuilder buttonBuilder = new PanelBuilder(buttonLayout);
+    buttonBuilder.add(forceStartButton, cc.xy(1, 1));
+    buttonBuilder.add(cancelButton, cc.xy(3, 1));
+
     FormLayout layout = new FormLayout(
       /* COLS */ "fill:default, 4dlu, fill:0px:grow",
-      /* ROWS */ "pref"
+      /* ROWS */ "pref, 4dlu, fill:pref:grow"
     );
     PanelBuilder builder = new PanelBuilder(layout, this);
     builder.setBorder(Borders.createEmptyBorder("2dlu, 0, 2dlu, 0"));
+    builder.add(iconPanel, cc.xywh(1, 1, 1, 3));
     builder.addLabel(job.getRequest().getTitle() == null ? "No title" : job.getRequest().getTitle(), cc.xywh(3, 1, 1, 1));
+    builder.add(buttonBuilder.getPanel(), cc.xywh(3, 3, 1, 1));
 
-  }
-
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  DownloadJob getJob() {
-    return this.myJob;
-  }
-  private void setJob(DownloadJob job) {
-    this.myJob = job;
   }
 
 }

@@ -203,13 +203,7 @@ public class DownloadEngine {
   }
 
   synchronized boolean cancelJob(DownloadJob job) {
-    if(this.getWaitingJobs().remove(job)) {
-
-      // The job could be found in the list of waiting jobs, so all we need to
-      // do is remove him from there and we're done!
-      return true;
-
-    } else if(!this.getActiveJobs().contains(job)) {
+    if(!this.getActiveJobs().contains(job) && !this.getWaitingJobs().remove(job)) {
 
       // The job could not be found in the list of active jobs, which means we
       // have no way of handling him at all - so we just exit
@@ -229,12 +223,14 @@ public class DownloadEngine {
   synchronized void checkWaitingJobs() {
     Queue<DownloadJob> queue = this.getWaitingJobs();
     int maxJobsToRemove = this.getProcessorCount() - this.getActiveJobs().size();
-    List<DownloadJob> removedJobs = new ArrayList<DownloadJob>(maxJobsToRemove);
-    for(int i=0; i < maxJobsToRemove && !queue.isEmpty(); i++) {
-      removedJobs.add(queue.remove());
-    }
-    for(DownloadJob job : removedJobs) {
-      this.startJob(job, false);
+    if(maxJobsToRemove > 0) {
+      List<DownloadJob> removedJobs = new ArrayList<DownloadJob>(maxJobsToRemove);
+      for(int i=0; i < maxJobsToRemove && !queue.isEmpty(); i++) {
+        removedJobs.add(queue.remove());
+      }
+      for(DownloadJob job : removedJobs) {
+        this.startJob(job, false);
+      }
     }
   }
 

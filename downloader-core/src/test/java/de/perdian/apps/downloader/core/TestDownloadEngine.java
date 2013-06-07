@@ -187,6 +187,51 @@ public class TestDownloadEngine {
     Mockito.verify(listener).processorCountUpdated(Matchers.eq(this.getEngineBuilder().getProcessorCount() + 1));
   }
 
+  @Test
+  public void cancelFromActiveJobs() throws Exception {
+
+    DownloadListener listener = Mockito.mock(DownloadListener.class);
+
+    DownloadJob job = Mockito.mock(DownloadJob.class);
+    DownloadEngine engine = this.getEngineBuilder().build();
+    engine.addListener(listener);
+    engine.getActiveJobs().add(job);
+
+    Assert.assertTrue(engine.cancelJob(job));
+    Assert.assertTrue(engine.getActiveJobs().contains(job));
+    Mockito.verify(listener).jobCancelled(Matchers.eq(job));
+
+  }
+
+  @Test
+  public void cancelFromWaitingJobs() throws Exception {
+
+    DownloadListener listener = Mockito.mock(DownloadListener.class);
+
+    DownloadJob job = Mockito.mock(DownloadJob.class);
+    DownloadEngine engine = this.getEngineBuilder().build();
+    engine.addListener(listener);
+    engine.getWaitingJobs().add(job);
+
+    Assert.assertTrue(engine.cancelJob(job));
+    Assert.assertFalse(engine.getWaitingJobs().contains(job));
+    Mockito.verify(listener).jobCancelled(Matchers.eq(job));
+
+  }
+
+  @Test
+  public void cancelNotInQueue() throws Exception {
+
+    DownloadListener listener = Mockito.mock(DownloadListener.class);
+
+    DownloadEngine engine = this.getEngineBuilder().build();
+    engine.addListener(listener);
+
+    Assert.assertFalse(engine.cancelJob(Mockito.mock(DownloadJob.class)));
+    Mockito.verify(listener, Mockito.never()).jobCancelled(Matchers.any(DownloadJob.class));
+
+  }
+
   // ---------------------------------------------------------------------------
   // --- Property access methods -----------------------------------------------
   // ---------------------------------------------------------------------------

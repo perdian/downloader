@@ -73,6 +73,7 @@ class ProgressJobPanel extends JPanel {
         job.cancel();
       }
     });
+    cancelButton.setToolTipText("Cancel");
     cancelButton.setIcon(Icons.createIcon("16/cancel.png"));
     cancelButton.setHorizontalTextPosition(SwingConstants.CENTER);
     cancelButton.setVerticalTextPosition(SwingConstants.BOTTOM);

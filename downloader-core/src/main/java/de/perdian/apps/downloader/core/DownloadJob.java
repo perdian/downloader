@@ -83,7 +83,7 @@ public class DownloadJob {
    * If the ob is already started then this method will do nothing at all.
    */
   public void forceStart() {
-    this.getOwner().startJob(this, false);
+    this.getOwner().startJob(this, true);
   }
 
   // ---------------------------------------------------------------------------
