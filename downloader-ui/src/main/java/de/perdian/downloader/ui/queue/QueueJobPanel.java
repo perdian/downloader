@@ -23,6 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -30,8 +31,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadJob;
+import de.perdian.downloader.ui.DownloadGuiHelper;
 import de.perdian.downloader.ui.resources.Icons;
 import de.perdian.downloader.ui.support.LazyLoadingIconPanel;
+import de.perdian.downloader.ui.support.PopupIconMouseListener;
 
 /**
  * Represents a single job within the queue panel
@@ -47,6 +50,7 @@ class QueueJobPanel extends JPanel {
 
     LazyLoadingIconPanel iconPanel = new LazyLoadingIconPanel(job.getRequest().getPreviewImageFactory(), new Dimension(70, 60));
     iconPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+    iconPanel.addMouseListener(new PopupIconMouseListener(job));
 
     JButton forceStartButton = new JButton(new AbstractAction() {
       static final long serialVersionUID = 1L;
@@ -69,6 +73,8 @@ class QueueJobPanel extends JPanel {
     cancelButton.setIcon(Icons.createIcon("16/cancel.png"));
     cancelButton.setToolTipText("Cancel");
 
+    JTextField titleLabel = DownloadGuiHelper.createLabelField(job.getRequest().getTitle() == null ? "No title" : job.getRequest().getTitle());
+
     CellConstraints cc = new CellConstraints();
     FormLayout buttonLayout = new FormLayout("fill:pref:grow, 4dlu, fill:pref:grow", "fill:pref:grow");
     buttonLayout.setColumnGroups(new int[][] { { 1, 3 } });
@@ -83,7 +89,7 @@ class QueueJobPanel extends JPanel {
     PanelBuilder builder = new PanelBuilder(layout, this);
     builder.setBorder(Borders.createEmptyBorder("2dlu, 0, 2dlu, 0"));
     builder.add(iconPanel, cc.xywh(1, 1, 1, 3));
-    builder.addLabel(job.getRequest().getTitle() == null ? "No title" : job.getRequest().getTitle(), cc.xywh(3, 1, 1, 1));
+    builder.add(titleLabel, cc.xywh(3, 1, 1, 1));
     builder.add(buttonBuilder.getPanel(), cc.xywh(3, 3, 1, 1));
 
   }

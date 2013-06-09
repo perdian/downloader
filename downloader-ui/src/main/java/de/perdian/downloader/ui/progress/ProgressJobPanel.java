@@ -29,6 +29,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -38,8 +39,10 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadProgressListener;
+import de.perdian.downloader.ui.DownloadGuiHelper;
 import de.perdian.downloader.ui.resources.Icons;
 import de.perdian.downloader.ui.support.LazyLoadingIconPanel;
+import de.perdian.downloader.ui.support.PopupIconMouseListener;
 
 class ProgressJobPanel extends JPanel {
 
@@ -54,13 +57,14 @@ class ProgressJobPanel extends JPanel {
 
     JComponent iconPanel = new LazyLoadingIconPanel(job.getRequest().getPreviewImageFactory(), new Dimension(110, 90));
     iconPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+    iconPanel.addMouseListener(new PopupIconMouseListener(job));
 
-    JLabel titleLabel = new JLabel(job.getRequest().getTitle() == null ? "No title" : job.getRequest().getTitle());
+    JTextField titleLabel = DownloadGuiHelper.createLabelField(job.getRequest().getTitle() == null ? "No title" : job.getRequest().getTitle());
     titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 
     StringBuilder fileName = new StringBuilder();
     fileName.append("File: ").append(job.getTargetFile());
-    JLabel fileNameLabel = new JLabel(fileName.toString());
+    JTextField fileNameLabel = DownloadGuiHelper.createLabelField(fileName.toString());
 
     JProgressBar progressBar = new JProgressBar();
     progressBar.setIndeterminate(true);

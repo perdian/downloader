@@ -31,15 +31,15 @@ import de.perdian.apps.downloader.core.DownloadEngine;
  * @author Christian Robert
  */
 
-public class DownloadGUI {
+public class DownloadGui {
 
-  static final Logger log = LogManager.getLogger(DownloadGUI.class);
+  static final Logger log = LogManager.getLogger(DownloadGui.class);
 
   /**
    * Launches the UI application
    */
   public static DownloadEngine open(DownloadEngine engine) {
-    return DownloadGUI.open(engine, new Dimension(800, 600));
+    return DownloadGui.open(engine, new Dimension(800, 600));
   }
 
   /**

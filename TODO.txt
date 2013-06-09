@@ -1,4 +1,1 @@
-- Replace JLabel with modified JTextField in Progress and Queue Panel
-- Add Tooltip to these fields
-- Add ClickHandler for preview image (Popup with large version)
-- Remove white background
+- Remove white background for preview images (or scale images to fit the area completely)

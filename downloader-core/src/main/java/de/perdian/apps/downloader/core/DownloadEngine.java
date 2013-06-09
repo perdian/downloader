@@ -54,7 +54,8 @@ public class DownloadEngine {
   private ExecutorService myExecutorService = Executors.newCachedThreadPool();
   private List<DownloadListener> myListeners = new CopyOnWriteArrayList<>();
   private Path myTargetDirectory = null;
-  private int myBufferSize = 4096;
+  private int myBufferSize = 1024 * 4; // 4 KiB
+  private int myNotificationSize = 1024 * 16; // 16 KiB
   private int myProcessorCount = 1;
   private Queue<DownloadJob> myWaitingJobs = new PriorityQueue<>(10, new DownloadJob.PriorityComparator());
   private List<DownloadJob> myActiveJobs = new ArrayList<>();
@@ -297,14 +298,24 @@ public class DownloadEngine {
       long inStreamSize = job.getRequest().getContentFactory().size();
       try(InputStream inStream = job.getRequest().getContentFactory().openStream()) {
         try(OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
+
+          long notificationBlockSize = Math.max(this.getBufferSize(), this.getNotificationSize());
+          long nextNotification = notificationBlockSize;
           long totalBytesWritten = 0;
+          job.fireProgress(0, inStreamSize);
+
           byte[] buffer = new byte[this.getBufferSize()];
           for(int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadStatus.ACTIVE.equals(job.getStatus()); bufferSize = inStream.read(buffer)) {
             outStream.write(buffer, 0, bufferSize);
             totalBytesWritten += bufferSize;
-            job.fireProgress(totalBytesWritten, inStreamSize);
+            if(totalBytesWritten > nextNotification) {
+              nextNotification += notificationBlockSize;
+              job.fireProgress(totalBytesWritten, inStreamSize);
+            }
           }
+          job.fireProgress(totalBytesWritten, inStreamSize);
           outStream.flush();
+
         } catch(final Exception e) {
           log.warn("Error occured during file transfer [" + job + "]", e);
           try {
@@ -459,6 +470,17 @@ public class DownloadEngine {
       throw new IllegalArgumentException("Parameter 'bufferSize' must be larger than 1");
     } else {
       this.myBufferSize = bufferSize;
+    }
+  }
+
+  public int getNotificationSize() {
+    return this.myNotificationSize;
+  }
+  public void setNotificationSize(int notificationSize) {
+    if(notificationSize < 1) {
+      throw new IllegalArgumentException("Parameter 'notificationSize' must be larger than 1");
+    } else {
+      this.myNotificationSize = notificationSize;
     }
   }
 
