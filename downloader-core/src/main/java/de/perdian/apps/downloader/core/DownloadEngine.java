@@ -260,7 +260,7 @@ public class DownloadEngine {
 
   void runJob(DownloadJob job) {
     try {
-      log.info("Running job: {}", job);
+      log.debug("Running job: {}", job);
       this.runJobTransfer(job);
       job.setEndTime(System.currentTimeMillis());
       job.setStatus(DownloadStatus.COMPLETED);
