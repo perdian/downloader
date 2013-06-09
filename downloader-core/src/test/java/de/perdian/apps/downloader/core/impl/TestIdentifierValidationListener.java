@@ -55,7 +55,7 @@ public class TestIdentifierValidationListener {
 
     Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
     IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.requestSubmitted(request);
+    listener.onRequestSubmitted(request);
 
   }
 
@@ -71,7 +71,7 @@ public class TestIdentifierValidationListener {
     Files.createFile(markerFile);
 
     IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.requestSubmitted(request);
+    listener.onRequestSubmitted(request);
 
   }
 
@@ -88,7 +88,7 @@ public class TestIdentifierValidationListener {
     Assert.assertFalse(Files.exists(markerFile));
 
     IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.jobCompleted(job);
+    listener.onJobCompleted(job);
     Assert.assertTrue(Files.exists(markerFile));
 
   }
@@ -103,7 +103,7 @@ public class TestIdentifierValidationListener {
 
     Path markerDirectory = Mockito.mock(Path.class);
     IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.jobCompleted(job);
+    listener.onJobCompleted(job);
     Mockito.verifyNoMoreInteractions(markerDirectory);
 
   }
@@ -121,7 +121,7 @@ public class TestIdentifierValidationListener {
     Assert.assertFalse(Files.exists(markerFile));
 
     IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.jobCancelled(job);
+    listener.onJobCancelled(job);
     Assert.assertTrue(Files.exists(markerFile));
 
   }

@@ -76,11 +76,11 @@ public class TestDownloadEngine {
     Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
     Assert.assertArrayEquals(streamBytes, Files.readAllBytes(job.getTargetFile()));
 
-    Mockito.verify(listener).requestSubmitted(Matchers.eq(request));
-    Mockito.verify(listener).jobStarted(Matchers.eq(job));
-    Mockito.verify(listener).jobCompleted(Matchers.eq(job));
+    Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
+    Mockito.verify(listener).onJobStarted(Matchers.eq(job));
+    Mockito.verify(listener).onJobCompleted(Matchers.eq(job));
     Mockito.verifyNoMoreInteractions(listener);
-    Mockito.verify(progressListener, Mockito.atLeast(1)).progress(Matchers.eq(job), Matchers.anyLong(), Matchers.anyLong());
+    Mockito.verify(progressListener, Mockito.atLeast(1)).onProgress(Matchers.eq(job), Matchers.anyLong(), Matchers.anyLong());
 
   }
 
@@ -112,9 +112,9 @@ public class TestDownloadEngine {
     Assert.assertNotNull(job.getStartTime());
     Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
 
-    Mockito.verify(listener).requestSubmitted(Matchers.eq(request));
-    Mockito.verify(listener).jobStarted(Matchers.eq(job));
-    Mockito.verify(listener).jobCompleted(Matchers.eq(job));
+    Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
+    Mockito.verify(listener).onJobStarted(Matchers.eq(job));
+    Mockito.verify(listener).onJobCompleted(Matchers.eq(job));
     Mockito.verifyNoMoreInteractions(listener);
     Mockito.verifyNoMoreInteractions(progressListener);
 
@@ -140,7 +140,7 @@ public class TestDownloadEngine {
   public void submitWithValidatorReject() throws Exception {
 
     DownloadListener listener = Mockito.mock(DownloadListener.class);
-    Mockito.doThrow(new DownloadRejectedException("X")).when(listener).requestSubmitted(Matchers.any(DownloadRequest.class));
+    Mockito.doThrow(new DownloadRejectedException("X")).when(listener).onRequestSubmitted(Matchers.any(DownloadRequest.class));
     this.getEngine().addListener(listener);
 
     DownloadRequest request = new DownloadRequest();
@@ -148,7 +148,7 @@ public class TestDownloadEngine {
     request.setTargetFileName("targetFileName");
 
     Assert.assertNull(this.getEngine().submit(request));
-    Mockito.verify(listener).requestSubmitted(Matchers.eq(request));
+    Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
     Mockito.verifyNoMoreInteractions(listener);
 
   }
@@ -177,7 +177,7 @@ public class TestDownloadEngine {
 
     int previousProcessorCount = this.getEngine().getProcessorCount();
     this.getEngine().setProcessorCount(previousProcessorCount + 1);
-    Mockito.verify(listener).processorCountUpdated(Matchers.eq(previousProcessorCount + 1));
+    Mockito.verify(listener).onProcessorCountUpdated(Matchers.eq(previousProcessorCount + 1));
 
   }
 
@@ -190,9 +190,9 @@ public class TestDownloadEngine {
     DownloadJob job = Mockito.mock(DownloadJob.class);
     this.getEngine().getActiveJobs().add(job);
 
-    Assert.assertTrue(this.getEngine().cancelJob(job));
+    Assert.assertTrue(this.getEngine().cancelJob(job, null));
     Assert.assertTrue(this.getEngine().getActiveJobs().contains(job));
-    Mockito.verify(listener).jobCancelled(Matchers.eq(job));
+    Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
 
   }
 
@@ -205,9 +205,9 @@ public class TestDownloadEngine {
     DownloadJob job = Mockito.mock(DownloadJob.class);
     this.getEngine().getWaitingJobs().add(job);
 
-    Assert.assertTrue(this.getEngine().cancelJob(job));
+    Assert.assertTrue(this.getEngine().cancelJob(job, null));
     Assert.assertFalse(this.getEngine().getWaitingJobs().contains(job));
-    Mockito.verify(listener).jobCancelled(Matchers.eq(job));
+    Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
 
   }
 
@@ -217,8 +217,8 @@ public class TestDownloadEngine {
     DownloadListener listener = Mockito.mock(DownloadListener.class);
     this.getEngine().addListener(listener);
 
-    Assert.assertFalse(this.getEngine().cancelJob(Mockito.mock(DownloadJob.class)));
-    Mockito.verify(listener, Mockito.never()).jobCancelled(Matchers.any(DownloadJob.class));
+    Assert.assertFalse(this.getEngine().cancelJob(Mockito.mock(DownloadJob.class), null));
+    Mockito.verify(listener, Mockito.never()).onJobCancelled(Matchers.any(DownloadJob.class));
 
   }
 

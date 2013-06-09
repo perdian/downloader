@@ -70,7 +70,7 @@ class ProgressJobPanel extends JPanel {
       static final long serialVersionUID = 1L;
       @Override public void actionPerformed(ActionEvent e) {
         ProgressJobPanel.this.setEnabled(false);
-        job.cancel();
+        job.cancel("Cancelled by user during transfer");
       }
     });
     cancelButton.setToolTipText("Cancel");
@@ -121,7 +121,7 @@ class ProgressJobPanel extends JPanel {
   class ProgressJobPanelProgressListener implements DownloadProgressListener {
 
     @Override
-    public void progress(DownloadJob job, final long bytesWritten, final long totalBytes) {
+    public void onProgress(DownloadJob job, final long bytesWritten, final long totalBytes) {
       if(totalBytes > 0) {
 
         final StringBuilder remainingInfo = new StringBuilder();

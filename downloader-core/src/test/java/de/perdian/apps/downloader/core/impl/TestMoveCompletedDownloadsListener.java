@@ -64,7 +64,7 @@ public class TestMoveCompletedDownloadsListener {
     Mockito.when(job.getTargetFile()).thenReturn(inFile);
 
     MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
-    listener.jobCompleted(job);
+    listener.onJobCompleted(job);
 
     Path outFile = outDirectory.resolve("42.txt");
     Assert.assertFalse(Files.exists(inFile));
@@ -89,7 +89,7 @@ public class TestMoveCompletedDownloadsListener {
     Mockito.when(job.getTargetFile()).thenReturn(inFile);
 
     MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
-    listener.jobCompleted(job);
+    listener.onJobCompleted(job);
 
     Assert.assertFalse(Files.exists(inFile));
     Assert.assertFalse(Files.exists(outDirectory.resolve("42.txt")));

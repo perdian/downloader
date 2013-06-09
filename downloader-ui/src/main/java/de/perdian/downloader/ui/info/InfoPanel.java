@@ -91,7 +91,7 @@ public class InfoPanel extends JPanel {
   class InfoPanelDownloadListener extends DownloadListenerSkeleton {
 
     @Override
-    public void processorCountUpdated(final int newProcessorCount) {
+    public void onProcessorCountUpdated(final int newProcessorCount) {
       SwingUtilities.invokeLater(new Runnable() {
         @Override public void run() {
           InfoPanel.this.getProcessorInfoLabel().setText(String.valueOf(newProcessorCount));

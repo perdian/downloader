@@ -159,10 +159,15 @@ public class DownloadEngine {
    * have been completed
    */
   public void waitUntilAllDownloadsComplete() {
+    synchronized(this) {
+      if(!this.isBusy()) {
+        return;
+      }
+    }
     try {
       final CountDownLatch latch = new CountDownLatch(1);
       this.addListener(new DownloadListenerSkeleton() {
-        @Override public void jobCompleted(DownloadJob job) {
+        @Override public void onJobCompleted(DownloadJob job) {
           synchronized(DownloadEngine.this) {
             if(!DownloadEngine.this.isBusy()) {
               DownloadEngine.this.removeListener(this);
@@ -208,7 +213,7 @@ public class DownloadEngine {
     }
   }
 
-  synchronized boolean cancelJob(DownloadJob job) {
+  synchronized boolean cancelJob(DownloadJob job, String reason) {
     if(!this.getActiveJobs().contains(job) && !this.getWaitingJobs().remove(job)) {
 
       // The job could not be found in the list of active jobs, which means we
@@ -217,8 +222,10 @@ public class DownloadEngine {
 
     } else {
 
+      log.debug("Cancelling job {} with reason: {}", job, reason);
       job.setStatus(DownloadStatus.CANCELLED);
       job.setCancelTime(System.currentTimeMillis());
+      job.setCancelReason(reason);
       this.fireJobCancelled(job);
       this.checkWaitingJobs();
       return true;
@@ -250,7 +257,7 @@ public class DownloadEngine {
       this.runJobTransfer(job);
       job.setEndTime(System.currentTimeMillis());
       job.setStatus(DownloadStatus.COMPLETED);
-      log.info("Job completed: {} in {} ms", job.getStatus(), (job.getEndTime() - job.getStartTime()));
+      log.info("Job completed: {} in {} ms", job, (job.getEndTime() - job.getStartTime()));
     } catch(Exception e) {
       job.setEndTime(System.currentTimeMillis());
       job.setError(e);
@@ -281,7 +288,7 @@ public class DownloadEngine {
 
     Path targetFilePath = this.getTargetDirectory().resolve(job.getRequest().getTargetFileName());
     if(!Files.exists(targetFilePath.getParent())) {
-      Files.createDirectory(targetFilePath.getParent());
+      Files.createDirectories(targetFilePath.getParent());
     }
     job.setTargetFile(targetFilePath);
     this.fireJobStarted(job);
@@ -326,7 +333,7 @@ public class DownloadEngine {
   // ---------------------------------------------------------------------------
 
   public void addListener(DownloadListener listener) {
-    log.debug("Adding listener to engine: {}", listener);
+    log.trace("Adding listener to engine: {}", listener);
     this.getListeners().add(Objects.requireNonNull(listener));
   }
   public boolean removeListener(DownloadListener listener) {
@@ -341,14 +348,14 @@ public class DownloadEngine {
 
   private void fireProcessorCountUpdated(int processorCount) {
     for(DownloadListener listener : this.getListeners()) {
-      listener.processorCountUpdated(processorCount);
+      listener.onProcessorCountUpdated(processorCount);
     }
   }
 
   private boolean fireRequestSubmitted(DownloadRequest request) {
     for(DownloadListener listener : this.getListeners()) {
       try {
-        listener.requestSubmitted(request);
+        listener.onRequestSubmitted(request);
       } catch(DownloadRejectedException e) {
         log.info("Request rejected by listener: {} (Listener: {}, Message: {})", request, listener, e.getMessage());
         return false;
@@ -359,25 +366,25 @@ public class DownloadEngine {
 
   private void fireJobScheduled(DownloadJob job) {
     for(DownloadListener listener : this.getListeners()) {
-      listener.jobScheduled(job);
+      listener.onJobScheduled(job);
     }
   }
 
   private void fireJobStarted(DownloadJob job) {
     for(DownloadListener listener : this.getListeners()) {
-      listener.jobStarted(job);
+      listener.onJobStarted(job);
     }
   }
 
   private void fireJobCompleted(DownloadJob job) {
     for(DownloadListener listener : this.getListeners()) {
-      listener.jobCompleted(job);
+      listener.onJobCompleted(job);
     }
   }
 
   private void fireJobCancelled(DownloadJob job) {
     for(DownloadListener listener : this.getListeners()) {
-      listener.jobCancelled(job);
+      listener.onJobCancelled(job);
     }
   }
 

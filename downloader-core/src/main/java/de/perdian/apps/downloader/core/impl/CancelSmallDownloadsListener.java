@@ -41,12 +41,16 @@ public class CancelSmallDownloadsListener extends DownloadListenerSkeleton {
   }
 
   @Override
-  public void jobStarted(DownloadJob job) {
+  public void onJobStarted(DownloadJob job) {
     DownloadStreamFactory streamFactory = job.getRequest().getContentFactory();
     try {
       long streamSize = streamFactory.size();
       if(streamSize >= 0 && streamSize < this.getThreshold()) {
-        job.cancel();
+        StringBuilder cancelMessage = new StringBuilder();
+        cancelMessage.append("Download too small! ");
+        cancelMessage.append("Minimum: ").append(this.getThreshold()).append(" bytes. ");
+        cancelMessage.append("Size: ").append(streamSize).append(" bytes.");
+        job.cancel(cancelMessage.toString());
       }
     } catch(IOException e) {
       log.debug("Cannot validate size for stream: " + streamFactory, e);

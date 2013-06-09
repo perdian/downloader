@@ -24,27 +24,27 @@ package de.perdian.apps.downloader.core;
 public class DownloadListenerSkeleton implements DownloadListener {
 
   @Override
-  public void processorCountUpdated(int newProcessorCount) {
+  public void onProcessorCountUpdated(int newProcessorCount) {
   }
 
   @Override
-  public void requestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+  public void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
   }
 
   @Override
-  public void jobScheduled(DownloadJob job) {
+  public void onJobScheduled(DownloadJob job) {
   }
 
   @Override
-  public void jobStarted(DownloadJob job) {
+  public void onJobStarted(DownloadJob job) {
   }
 
   @Override
-  public void jobCompleted(DownloadJob job) {
+  public void onJobCompleted(DownloadJob job) {
   }
 
   @Override
-  public void jobCancelled(DownloadJob job) {
+  public void onJobCancelled(DownloadJob job) {
   }
 
 }

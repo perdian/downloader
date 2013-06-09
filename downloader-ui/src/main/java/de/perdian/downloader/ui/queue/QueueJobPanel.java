@@ -62,7 +62,7 @@ class QueueJobPanel extends JPanel {
       static final long serialVersionUID = 1L;
       @Override public void actionPerformed(ActionEvent e) {
         ((JButton)e.getSource()).setEnabled(false);
-        job.cancel();
+        job.cancel("Removed by user from queue");
       }
     });
     cancelButton.setFocusable(false);

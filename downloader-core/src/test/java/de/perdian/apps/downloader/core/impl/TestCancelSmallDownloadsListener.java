@@ -16,6 +16,7 @@
 package de.perdian.apps.downloader.core.impl;
 
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import de.perdian.apps.downloader.core.DownloadJob;
@@ -35,8 +36,8 @@ public class TestCancelSmallDownloadsListener {
     Mockito.when(job.getRequest()).thenReturn(request);
 
     CancelSmallDownloadsListener listener = new CancelSmallDownloadsListener(1000);
-    listener.jobStarted(job);
-    Mockito.verify(job).cancel();
+    listener.onJobStarted(job);
+    Mockito.verify(job).cancel(Matchers.any(String.class));
 
   }
 
@@ -51,7 +52,7 @@ public class TestCancelSmallDownloadsListener {
     Mockito.when(job.getRequest()).thenReturn(request);
 
     CancelSmallDownloadsListener listener = new CancelSmallDownloadsListener(1000);
-    listener.jobStarted(job);
+    listener.onJobStarted(job);
     Mockito.verify(job).getRequest();
     Mockito.verifyNoMoreInteractions(job);
 

@@ -55,12 +55,12 @@ public class ProgressPanel extends AbstractListPanel<DownloadJob, ProgressJobPan
   class ProgressPanelDownloadListener extends DownloadListenerSkeleton {
 
     @Override
-    public void jobStarted(DownloadJob job) {
+    public void onJobStarted(DownloadJob job) {
       ProgressPanel.this.insertItem(job);
     }
 
     @Override
-    public void jobCompleted(DownloadJob job) {
+    public void onJobCompleted(DownloadJob job) {
       ProgressPanel.this.removeItem(job);
     }
 

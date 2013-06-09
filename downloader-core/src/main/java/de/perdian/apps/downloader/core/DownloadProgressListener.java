@@ -24,6 +24,6 @@ package de.perdian.apps.downloader.core;
 
 public interface DownloadProgressListener {
 
-  public void progress(DownloadJob job, long bytesWritten, long totalBytes);
+  public void onProgress(DownloadJob job, long bytesWritten, long totalBytes);
 
 }

@@ -51,7 +51,7 @@ public class MoveCompletedDownloadsListener extends DownloadListenerSkeleton {
   }
 
   @Override
-  public void jobCompleted(DownloadJob job) {
+  public void onJobCompleted(DownloadJob job) {
     if(job.getTargetFile() != null && job.getCancelTime() != null) {
       try {
         Files.deleteIfExists(job.getTargetFile());

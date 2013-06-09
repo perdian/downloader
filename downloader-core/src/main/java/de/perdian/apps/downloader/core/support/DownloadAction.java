@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.downloader.ui;
+package de.perdian.apps.downloader.core.support;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 
@@ -26,7 +26,7 @@ import de.perdian.apps.downloader.core.DownloadEngine;
  * @author Christian Robert
  */
 
-public interface DownloaderLauncherAction {
+public interface DownloadAction {
 
   /**
    * Executes the action within the context of the given engine

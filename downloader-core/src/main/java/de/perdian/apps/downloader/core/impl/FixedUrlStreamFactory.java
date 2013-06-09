@@ -16,9 +16,7 @@
 package de.perdian.apps.downloader.core.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Objects;
 
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
@@ -30,25 +28,19 @@ import de.perdian.apps.downloader.core.DownloadStreamFactory;
  * @author Christian Robert
  */
 
-public class UrlStreamFactory implements DownloadStreamFactory {
+public class FixedUrlStreamFactory extends AbstractUrlStreamFactory {
 
   static final long serialVersionUID = 1L;
 
   private URL myUrl = null;
 
-  public UrlStreamFactory(URL url) {
+  public FixedUrlStreamFactory(URL url) {
     this.setUrl(Objects.requireNonNull(url, "Parameter 'url' must not be null"));
   }
 
   @Override
-  public InputStream openStream() throws IOException {
-    return this.getUrl().openStream();
-  }
-
-  @Override
-  public long size() throws IOException {
-    URLConnection urlConnection = this.getUrl().openConnection();
-    return urlConnection.getContentLengthLong();
+  protected URL createUrl() throws IOException {
+    return this.getUrl();
   }
 
   // ---------------------------------------------------------------------------

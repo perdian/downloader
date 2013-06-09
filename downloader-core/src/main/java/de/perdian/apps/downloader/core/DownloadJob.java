@@ -37,6 +37,7 @@ public class DownloadJob {
   private Long myStartTime = null;
   private Long myEndTime = null;
   private Long myCancelTime = null;
+  private String myCancelReason = null;
   private Path myTargetFile = null;
   private Exception myError = null;
   private int myPriority = 0;
@@ -68,9 +69,12 @@ public class DownloadJob {
    * this doesn't mean that the transfer will immediately stop! If the processor
    * thread itself doesn't provide an option to immedately stop the process the
    * actual download might continue until the processor thread is able to stop.
+   *
+   * @param reason
+   *   the reason why this job was cancelled
    */
-  public void cancel() {
-    this.getOwner().cancelJob(this);
+  public void cancel(String reason) {
+    this.getOwner().cancelJob(this, reason);
   }
 
   /**
@@ -92,7 +96,7 @@ public class DownloadJob {
 
   void fireProgress(long bytesWritten, long totalBytes) {
     for(DownloadProgressListener progressListener : this.getProgressListeners()) {
-      progressListener.progress(this, bytesWritten, totalBytes);
+      progressListener.onProgress(this, bytesWritten, totalBytes);
     }
   }
   List<DownloadProgressListener> getProgressListeners() {
@@ -208,6 +212,16 @@ public class DownloadJob {
   }
 
   /**
+   * Sets the reason why this job was cancelled
+   */
+  public String getCancelReason() {
+    return this.myCancelReason;
+  }
+  void setCancelReason(String cancelReason) {
+    this.myCancelReason = cancelReason;
+  }
+
+  /**
    * Gets an {@code Exception} that occured during the transfer process.
    */
   public Exception getError() {
@@ -245,7 +259,7 @@ public class DownloadJob {
   public int getPriority() {
     return this.myPriority;
   }
-  public void setPriority(int priority) {
+  void setPriority(int priority) {
     this.myPriority = priority;
   }
 

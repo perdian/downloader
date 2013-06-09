@@ -35,11 +35,11 @@ import de.perdian.downloader.ui.queue.QueuePanel;
  * @author Christian Robert
  */
 
-public class DownloaderPanel extends JPanel {
+public class DownloadPanel extends JPanel {
 
   static final long serialVersionUID = 1L;
 
-  public DownloaderPanel(DownloadEngine engine) {
+  public DownloadPanel(DownloadEngine engine) {
 
     InfoPanel infoPanel = new InfoPanel(engine);
     infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder(" Engine information "), Borders.createEmptyBorder("4dlu, 4dlu, 2dlu, 4dlu")));

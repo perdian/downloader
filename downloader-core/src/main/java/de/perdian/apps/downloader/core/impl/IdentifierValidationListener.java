@@ -47,23 +47,29 @@ public class IdentifierValidationListener extends DownloadListenerSkeleton {
   }
 
   @Override
-  public void requestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+  public void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
     if(request.getId() != null && this.hasIdentifier(request.getId())) {
       throw new DownloadRejectedException("Marker file existing for id: " + request.getId());
     }
   }
 
   @Override
-  public void jobCompleted(DownloadJob job) {
+  public void onJobCompleted(DownloadJob job) {
     if(job.getRequest().getId() != null) {
-      this.pushIdentifier(job.getRequest().getId(), job.getError() == null ? "COMPLETED" : "ERROR [" + job.getError() + "]");
+      if(job.getError() != null) {
+        this.pushIdentifier(job.getRequest().getId(), "ERROR [" + job.getError() + "]");
+      } else if(job.getCancelTime() != null) {
+        this.pushIdentifier(job.getRequest().getId(), "CANCELLED[" + (job.getCancelReason() == null ? "<No reason>" : job.getCancelReason()) + "]");
+      } else {
+        this.pushIdentifier(job.getRequest().getId(), "COMPLETED [" + (job.getEndTime() - job.getStartTime()) + "ms");
+      }
     }
   }
 
   @Override
-  public void jobCancelled(DownloadJob job) {
+  public void onJobCancelled(DownloadJob job) {
     if(job.getRequest().getId() != null) {
-      this.pushIdentifier(job.getRequest().getId(), "CANCELLED");
+      this.pushIdentifier(job.getRequest().getId(), "CANCELLED[" + (job.getCancelReason() == null ? "<No reason>" : job.getCancelReason()) + "]");
     }
   }
 

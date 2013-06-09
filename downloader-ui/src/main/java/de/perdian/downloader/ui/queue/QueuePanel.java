@@ -55,17 +55,17 @@ public class QueuePanel extends AbstractListPanel<DownloadJob, QueueJobPanel> {
   class QueuePanelDownloadListener extends DownloadListenerSkeleton {
 
     @Override
-    public void jobScheduled(DownloadJob job) {
+    public void onJobScheduled(DownloadJob job) {
       QueuePanel.this.insertItem(job);
     }
 
     @Override
-    public void jobStarted(DownloadJob job) {
+    public void onJobStarted(DownloadJob job) {
       QueuePanel.this.removeItem(job);
     }
 
     @Override
-    public void jobCancelled(DownloadJob job) {
+    public void onJobCancelled(DownloadJob job) {
       QueuePanel.this.removeItem(job);
     }
 
