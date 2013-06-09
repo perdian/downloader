@@ -451,10 +451,10 @@ public class DownloadEngine {
     this.myTargetDirectory = targetDirectory;
   }
 
-  int getBufferSize() {
+  public int getBufferSize() {
     return this.myBufferSize;
   }
-  void setBufferSize(int bufferSize) {
+  public void setBufferSize(int bufferSize) {
     if(bufferSize < 1) {
       throw new IllegalArgumentException("Parameter 'bufferSize' must be larger than 1");
     } else {
