@@ -64,6 +64,11 @@ public class ProgressPanel extends AbstractListPanel<DownloadJob, ProgressJobPan
       ProgressPanel.this.removeItem(job);
     }
 
+    @Override
+    public void onJobCancelled(DownloadJob job) {
+      ProgressPanel.this.disableItem(job);
+    }
+
   }
 
 }

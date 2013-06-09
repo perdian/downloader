@@ -215,7 +215,13 @@ public class DownloadEngine {
   }
 
   synchronized boolean cancelJob(DownloadJob job, String reason) {
-    if(!this.getActiveJobs().contains(job) && !this.getWaitingJobs().remove(job)) {
+    if(DownloadStatus.CANCELLED.equals(job.getStatus())) {
+
+      // The download is already cancelled, so there must be someone else
+      // calling the cancel method twice.
+      return true;
+
+    } else if(!this.getActiveJobs().contains(job) && !this.getWaitingJobs().remove(job)) {
 
       // The job could not be found in the list of active jobs, which means we
       // have no way of handling him at all - so we just exit
@@ -368,7 +374,7 @@ public class DownloadEngine {
       try {
         listener.onRequestSubmitted(request);
       } catch(DownloadRejectedException e) {
-        log.info("Request rejected by listener: {} (Listener: {}, Message: {})", request, listener, e.getMessage());
+        log.info("Request rejected by listener {}: (Request: {}, Message: {})", listener.getClass().getSimpleName(), request, e.getMessage());
         return false;
       }
     }
