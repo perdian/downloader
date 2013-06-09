@@ -109,7 +109,7 @@ public abstract class AbstractListPanel<T, C extends JComponent> extends JPanel 
   }
 
   public void disableItem(DownloadJob job) {
-    final C itemPanel = this.getItemPanelMap().remove(job);
+    final C itemPanel = this.getItemPanelMap().get(job);
     if(itemPanel != null) {
       itemPanel.setEnabled(false);
     }
