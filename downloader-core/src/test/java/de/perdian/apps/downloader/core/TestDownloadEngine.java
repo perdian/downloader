@@ -190,6 +190,11 @@ public class TestDownloadEngine {
     DownloadJob job = Mockito.mock(DownloadJob.class);
     this.getEngine().getActiveJobs().add(job);
 
+    // Cancelling the job does _not_ remove it from the list of waiting jobs!
+    // It simply sets the state to CANCELLED and informs everyone by generating
+    // an event. The actual removal is done by the processor thread. Since in
+    // this test we do not have a processor thread, the job will remain in the
+    // activeJobs list.
     Assert.assertTrue(this.getEngine().cancelJob(job, null));
     Assert.assertTrue(this.getEngine().getActiveJobs().contains(job));
     Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
