@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.downloader.ui.queue;
+package de.perdian.downloader.ui.swing.queue;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -31,10 +31,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadJob;
-import de.perdian.downloader.ui.DownloadGuiHelper;
-import de.perdian.downloader.ui.resources.Icons;
-import de.perdian.downloader.ui.support.LazyLoadingIconPanel;
-import de.perdian.downloader.ui.support.PopupIconMouseListener;
+import de.perdian.downloader.ui.swing.DownloadGuiHelper;
+import de.perdian.downloader.ui.swing.resources.Icons;
+import de.perdian.downloader.ui.swing.support.LazyLoadingIconPanel;
+import de.perdian.downloader.ui.swing.support.PopupIconMouseListener;
 
 /**
  * Represents a single job within the queue panel

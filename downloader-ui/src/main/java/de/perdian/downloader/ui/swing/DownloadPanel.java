@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.downloader.ui;
+package de.perdian.downloader.ui.swing;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -24,9 +24,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
-import de.perdian.downloader.ui.info.InfoPanel;
-import de.perdian.downloader.ui.progress.ProgressPanel;
-import de.perdian.downloader.ui.queue.QueuePanel;
+import de.perdian.downloader.ui.swing.info.InfoPanel;
+import de.perdian.downloader.ui.swing.progress.ProgressPanel;
+import de.perdian.downloader.ui.swing.queue.QueuePanel;
 
 /**
  * The main panel in which a downloader is presented and from which the

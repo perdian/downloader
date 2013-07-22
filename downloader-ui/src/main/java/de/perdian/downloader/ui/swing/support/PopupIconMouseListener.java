@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.downloader.ui.support;
+package de.perdian.downloader.ui.swing.support;
 
 import java.awt.BorderLayout;
 import java.awt.Point;
@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
-import de.perdian.downloader.ui.DownloadGuiHelper;
+import de.perdian.downloader.ui.swing.DownloadGuiHelper;
 
 public class PopupIconMouseListener extends MouseAdapter {
 
