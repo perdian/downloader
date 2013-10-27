@@ -17,6 +17,18 @@
       <artifactId>downloader-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>javafx</groupId>
+      <artifactId>jfxrt</artifactId>
+      <version>2.2</version>
+      <scope>system</scope>
+      <systemPath>${java.home}/lib/jfxrt.jar</systemPath>
+    </dependency>
+
+    <!--
+      Swing - remove once transfer to JavaFX has been completed
+    -->
     <dependency>
       <groupId>com.jgoodies</groupId>
       <artifactId>forms</artifactId>
@@ -27,6 +39,7 @@
       <artifactId>looks</artifactId>
       <version>2.2.2</version>
     </dependency>
+
   </dependencies>
 
 </project>

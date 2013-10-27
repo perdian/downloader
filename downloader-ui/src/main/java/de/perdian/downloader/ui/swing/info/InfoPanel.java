@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.downloader.ui.info;
+package de.perdian.downloader.ui.swing.info;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -33,7 +33,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
-import de.perdian.downloader.ui.resources.Icons;
+import de.perdian.downloader.ui.swing.resources.Icons;
 
 /**
  * Displays information about the configured state of the engine itself and

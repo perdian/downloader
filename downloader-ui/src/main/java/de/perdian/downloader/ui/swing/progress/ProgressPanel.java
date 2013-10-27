@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.downloader.ui.queue;
+package de.perdian.downloader.ui.swing.progress;
 
 import com.jgoodies.forms.factories.Borders;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
-import de.perdian.downloader.ui.support.AbstractListPanel;
+import de.perdian.downloader.ui.swing.support.AbstractListPanel;
 
 /**
- * Displays all the download jobs currently waiting for execution
+ * Contains all the active downloads
  *
  * @author Christian Robert
  */
 
-public class QueuePanel extends AbstractListPanel<DownloadJob, QueueJobPanel> {
+public class ProgressPanel extends AbstractListPanel<DownloadJob, ProgressJobPanel> {
 
-  static final long serialVersionUID = 201306061233L;
+  static final long serialVersionUID = 1L;
 
-  public QueuePanel(DownloadEngine engine) {
-    engine.addListener(new QueuePanelDownloadListener());
+  public ProgressPanel(DownloadEngine engine) {
+    engine.addListener(new ProgressPanelDownloadListener());
   }
 
   @Override
   protected String createEmptyMessage() {
-    return "No jobs queued";
+    return "No downloads active";
   }
 
   @Override
-  protected QueueJobPanel createItemPanel(DownloadJob job) {
-    QueueJobPanel jobPanel = new QueueJobPanel(job);
-    jobPanel.setBorder(Borders.createEmptyBorder("1dlu, 0, 2dlu, 4dlu"));
+  protected ProgressJobPanel createItemPanel(DownloadJob item) {
+    ProgressJobPanel jobPanel = new ProgressJobPanel(item);
+    jobPanel.setBorder(Borders.createEmptyBorder("2dlu, 0, 4dlu, 4dlu"));
     return jobPanel;
   }
 
@@ -52,21 +52,21 @@ public class QueuePanel extends AbstractListPanel<DownloadJob, QueueJobPanel> {
   // --- Inner classes ---------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  class QueuePanelDownloadListener extends DownloadListenerSkeleton {
-
-    @Override
-    public void onJobScheduled(DownloadJob job) {
-      QueuePanel.this.insertItem(job);
-    }
+  class ProgressPanelDownloadListener extends DownloadListenerSkeleton {
 
     @Override
     public void onJobStarted(DownloadJob job) {
-      QueuePanel.this.removeItem(job);
+      ProgressPanel.this.insertItem(job);
+    }
+
+    @Override
+    public void onJobCompleted(DownloadJob job) {
+      ProgressPanel.this.removeItem(job);
     }
 
     @Override
     public void onJobCancelled(DownloadJob job) {
-      QueuePanel.this.removeItem(job);
+      ProgressPanel.this.disableItem(job);
     }
 
   }
