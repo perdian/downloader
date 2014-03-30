@@ -15,7 +15,7 @@
   </modules>
 
   <properties>
-    <log4j.version>2.0-beta9</log4j.version>
+    <log4j.version>2.0-rc1</log4j.version>
   </properties>
 
   <build>
