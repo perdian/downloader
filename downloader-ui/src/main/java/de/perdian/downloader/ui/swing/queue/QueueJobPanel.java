@@ -87,10 +87,10 @@ class QueueJobPanel extends JPanel {
       /* ROWS */ "pref, 4dlu, fill:pref:grow"
     );
     PanelBuilder builder = new PanelBuilder(layout, this);
-    builder.setBorder(Borders.createEmptyBorder("2dlu, 0, 2dlu, 0"));
     builder.add(iconPanel, cc.xywh(1, 1, 1, 3));
     builder.add(titleLabel, cc.xywh(3, 1, 1, 1));
     builder.add(buttonBuilder.getPanel(), cc.xywh(3, 3, 1, 1));
+    builder.getPanel().setBorder(Borders.createEmptyBorder("2dlu, 0, 2dlu, 0"));
 
   }
 

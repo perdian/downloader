@@ -56,7 +56,7 @@ public class DownloadPanel extends JPanel {
       /* ROWS */ "fill:pref, 4dlu, fill:0px:grow"
     );
     PanelBuilder builder = new PanelBuilder(layout, this);
-    builder.setDefaultDialogBorder();
+    builder.getPanel().setBorder(Borders.DIALOG);;
     builder.add(progressPanel, cc.xywh(1, 1, 1, 3));
     builder.add(infoPanel, cc.xywh(3, 1, 1, 1));
     builder.add(queuePanel, cc.xywh(3, 3, 1, 1));
