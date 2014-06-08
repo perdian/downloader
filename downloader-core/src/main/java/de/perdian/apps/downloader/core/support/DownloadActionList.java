@@ -32,10 +32,6 @@ public class DownloadActionList {
     private List<DownloadAction> actions = new CopyOnWriteArrayList<>();
 
     public void executeActions(DownloadEngine engine) {
-        new Thread(() -> this.executeActionsInternal(engine)).start();
-    }
-
-    private void executeActionsInternal(DownloadEngine engine) {
         List<DownloadAction> actions = this.getActions();
         if (actions != null && actions.size() > 0) {
             log.trace("Executing {} actions", actions.size());
