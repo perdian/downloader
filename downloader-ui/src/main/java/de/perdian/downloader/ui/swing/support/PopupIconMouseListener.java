@@ -31,8 +31,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.DownloadJob;
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
@@ -40,7 +40,7 @@ import de.perdian.downloader.ui.swing.DownloadGuiHelper;
 
 public class PopupIconMouseListener extends MouseAdapter {
 
-  private static final Logger log = LogManager.getLogger(PopupIconMouseListener.class);
+  private static final Logger log = LoggerFactory.getLogger(PopupIconMouseListener.class);
 
   private DownloadJob myJob = null;
 

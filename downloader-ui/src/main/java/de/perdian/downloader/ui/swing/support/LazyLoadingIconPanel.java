@@ -34,8 +34,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
@@ -49,7 +49,7 @@ import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
 public class LazyLoadingIconPanel extends JPanel {
 
-  static final Logger log = LogManager.getLogger(LazyLoadingIconPanel.class);
+  static final Logger log = LoggerFactory.getLogger(LazyLoadingIconPanel.class);
   static final long serialVersionUID = 1L;
   static final Executor DEFAULT_EXECUTOR = Executors.newFixedThreadPool(10);
 

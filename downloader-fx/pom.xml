@@ -6,17 +6,16 @@
         <artifactId>downloader-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>downloader-core</artifactId>
+    <artifactId>downloader-fx</artifactId>
 
-    <name>Downloader Core</name>
-    <description>Downloader Core</description>
+    <name>Downloader FX</name>
+    <description>Downloader FX</description>
 
     <dependencies>
         <dependency>
-            <groupId>com.github.marschall</groupId>
-            <artifactId>memoryfilesystem</artifactId>
-            <version>0.5.4</version>
-            <scope>test</scope>
+            <groupId>de.perdian.apps.downloader</groupId>
+            <artifactId>downloader-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

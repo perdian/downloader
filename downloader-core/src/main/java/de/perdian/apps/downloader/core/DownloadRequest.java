@@ -32,62 +32,62 @@ import java.io.Serializable;
 
 public class DownloadRequest implements Serializable {
 
-  static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
-  private DownloadStreamFactory myContentFactory = null;
-  private DownloadStreamFactory myPreviewImageFactory = null;
-  private String myId = null;
-  private String myTitle = null;
-  private String myTargetFileName = null;
+    private DownloadStreamFactory contentFactory = null;
+    private DownloadStreamFactory previewImageFactory = null;
+    private String id = null;
+    private String title = null;
+    private String targetFileName = null;
 
-  @Override
-  public String toString() {
-    StringBuilder result = new StringBuilder();
-    result.append(this.getClass().getSimpleName());
-    result.append("[id=").append(this.getId());
-    result.append(",title=").append(this.getTitle());
-    result.append(",targetFileName=").append(this.getTargetFileName());
-    result.append(",contentFactory=").append(this.getContentFactory());
-    return result.append("]").toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(this.getClass().getSimpleName());
+        result.append("[id=").append(this.getId());
+        result.append(",title=").append(this.getTitle());
+        result.append(",targetFileName=").append(this.getTargetFileName());
+        result.append(",contentFactory=").append(this.getContentFactory());
+        return result.append("]").toString();
+    }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // -------------------------------------------------------------------------
 
-  public String getId() {
-    return this.myId;
-  }
-  public void setId(String id) {
-    this.myId = id;
-  }
+    public String getId() {
+        return this.id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-  public String getTitle() {
-    return this.myTitle;
-  }
-  public void setTitle(String title) {
-    this.myTitle = title;
-  }
+    public String getTitle() {
+        return this.title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-  public String getTargetFileName() {
-    return this.myTargetFileName;
-  }
-  public void setTargetFileName(String targetFileName) {
-    this.myTargetFileName = targetFileName;
-  }
+    public String getTargetFileName() {
+        return this.targetFileName;
+    }
+    public void setTargetFileName(String targetFileName) {
+        this.targetFileName = targetFileName;
+    }
 
-  public DownloadStreamFactory getContentFactory() {
-    return this.myContentFactory;
-  }
-  public void setContentFactory(DownloadStreamFactory contentFactory) {
-    this.myContentFactory = contentFactory;
-  }
+    public DownloadStreamFactory getContentFactory() {
+        return this.contentFactory;
+    }
+    public void setContentFactory(DownloadStreamFactory contentFactory) {
+        this.contentFactory = contentFactory;
+    }
 
-  public DownloadStreamFactory getPreviewImageFactory() {
-    return this.myPreviewImageFactory;
-  }
-  public void setPreviewImageFactory(DownloadStreamFactory previewImageFactory) {
-    this.myPreviewImageFactory = previewImageFactory;
-  }
+    public DownloadStreamFactory getPreviewImageFactory() {
+        return this.previewImageFactory;
+    }
+    public void setPreviewImageFactory(DownloadStreamFactory previewImageFactory) {
+        this.previewImageFactory = previewImageFactory;
+    }
 
 }

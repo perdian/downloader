@@ -25,7 +25,7 @@ import java.util.Objects;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadJob;
-import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
+import de.perdian.apps.downloader.core.DownloadListener;
 import de.perdian.apps.downloader.core.DownloadRejectedException;
 import de.perdian.apps.downloader.core.DownloadRequest;
 
@@ -38,87 +38,88 @@ import de.perdian.apps.downloader.core.DownloadRequest;
  * @author Christian Robert
  */
 
-public class IdentifierValidationListener extends DownloadListenerSkeleton {
+public class IdentifierValidationListener implements DownloadListener {
 
-  private Path myMarkerDirectory = null;
+    private Path markerDirectory = null;
 
-  public IdentifierValidationListener(Path markerDirectory) {
-    this.setMarkerDirectory(Objects.requireNonNull(markerDirectory, "Parameter 'markerDirectory' must not be null"));
-  }
-
-  @Override
-  public void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
-    if(request.getId() != null && this.hasIdentifier(request.getId())) {
-      throw new DownloadRejectedException("Marker file existing for id: " + request.getId());
+    public IdentifierValidationListener(Path markerDirectory) {
+        this.setMarkerDirectory(Objects.requireNonNull(markerDirectory, "Parameter 'markerDirectory' must not be null"));
     }
-  }
 
-  @Override
-  public void onJobCompleted(DownloadJob job) {
-    if(job.getRequest().getId() != null) {
-      if(job.getError() != null) {
-        this.pushIdentifier(job.getRequest().getId(), "ERROR [" + job.getError() + "]");
-      } else if(job.getCancelTime() != null) {
-        this.pushIdentifier(job.getRequest().getId(), "CANCELLED[" + (job.getCancelReason() == null ? "<No reason>" : job.getCancelReason()) + "]");
-      } else {
-        this.pushIdentifier(job.getRequest().getId(), "COMPLETED [" + (job.getEndTime() - job.getStartTime()) + "ms");
-      }
+    @Override
+    public void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+        if (request.getId() != null && this.hasIdentifier(request.getId())) {
+            throw new DownloadRejectedException("Marker file existing for id: " + request.getId());
+        }
     }
-  }
 
-  @Override
-  public void onJobCancelled(DownloadJob job) {
-    if(job.getRequest().getId() != null) {
-      this.pushIdentifier(job.getRequest().getId(), "CANCELLED[" + (job.getCancelReason() == null ? "<No reason>" : job.getCancelReason()) + "]");
+    @Override
+    public void onJobCompleted(DownloadJob job) {
+        if (job.getRequest().getId() != null) {
+            if (job.getError() != null) {
+                this.pushIdentifier(job.getRequest().getId(), "ERROR [" + job.getError() + "]");
+            } else if (job.getCancelTime() != null) {
+                this.pushIdentifier(job.getRequest().getId(), "CANCELLED[" + (job.getCancelReason() == null ? "<No reason>" : job.getCancelReason()) + "]");
+            } else {
+                this.pushIdentifier(job.getRequest().getId(), "COMPLETED [" + (job.getEndTime() - job.getStartTime()) + "ms");
+            }
+        }
     }
-  }
 
-  @Override
-  public String toString() {
-    StringBuilder result = new StringBuilder();
-    result.append(this.getClass().getSimpleName());
-    result.append("[markerDirectory=").append(this.getMarkerDirectory());
-    return result.append("]").toString();
-  }
-
-  // ---------------------------------------------------------------------------
-  // --- Identifier handling ---------------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  private void pushIdentifier(String identifier, String comment) {
-    try {
-
-      if(!Files.exists(this.getMarkerDirectory())) {
-        Files.createDirectory(this.getMarkerDirectory());
-      }
-      Path markerFile = this.getMarkerDirectory().resolve(identifier + ".marker");
-      if(!Files.exists(markerFile)) {
-        Files.createFile(markerFile);
-      }
-
-      StringBuilder fileContent = new StringBuilder();
-      fileContent.append(new Date()).append("\n");
-      fileContent.append(comment);
-      Files.write(markerFile, fileContent.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
-
-    } catch(IOException e) {
-      throw new RuntimeException("Cannot access marker directory at: " + this.getMarkerDirectory(), e);
+    @Override
+    public void onJobCancelled(DownloadJob job) {
+        if (job.getRequest().getId() != null) {
+            this.pushIdentifier(job.getRequest().getId(), "CANCELLED[" + (job.getCancelReason() == null ? "<No reason>" : job.getCancelReason()) + "]");
+        }
     }
-  }
 
-  private boolean hasIdentifier(String identifier) {
-    return Files.exists(this.getMarkerDirectory().resolve(identifier + ".marker"));
-  }
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(this.getClass().getSimpleName());
+        result.append("[markerDirectory=").append(this.getMarkerDirectory());
+        return result.append("]").toString();
+    }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- Identifier handling -------------------------------------------------
+    // -------------------------------------------------------------------------
 
-  public Path getMarkerDirectory() {
-    return this.myMarkerDirectory;
-  }
-  public void setMarkerDirectory(Path markerDirectory) {
-    this.myMarkerDirectory = markerDirectory;
-  }
+    private void pushIdentifier(String identifier, String comment) {
+        try {
+
+            if (!Files.exists(this.getMarkerDirectory())) {
+                Files.createDirectory(this.getMarkerDirectory());
+            }
+            Path markerFile = this.getMarkerDirectory().resolve(identifier + ".marker");
+            if (!Files.exists(markerFile)) {
+                Files.createFile(markerFile);
+            }
+
+            StringBuilder fileContent = new StringBuilder();
+            fileContent.append(new Date()).append("\n");
+            fileContent.append(comment);
+            Files.write(markerFile, fileContent.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot access marker directory at: " + this.getMarkerDirectory(), e);
+        }
+    }
+
+    private boolean hasIdentifier(String identifier) {
+        return Files.exists(this.getMarkerDirectory().resolve(identifier + ".marker"));
+    }
+
+    // ---------------------------------------------------------------------------
+    // --- Property access methods
+    // -----------------------------------------------
+    // ---------------------------------------------------------------------------
+
+    public Path getMarkerDirectory() {
+        return this.markerDirectory;
+    }
+    public void setMarkerDirectory(Path markerDirectory) {
+        this.markerDirectory = markerDirectory;
+    }
 
 }

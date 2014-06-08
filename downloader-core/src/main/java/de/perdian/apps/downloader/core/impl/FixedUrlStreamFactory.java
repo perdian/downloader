@@ -30,28 +30,29 @@ import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
 public class FixedUrlStreamFactory extends AbstractUrlStreamFactory {
 
-  static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
-  private URL myUrl = null;
+    private URL myUrl = null;
 
-  public FixedUrlStreamFactory(URL url) {
-    this.setUrl(Objects.requireNonNull(url, "Parameter 'url' must not be null"));
-  }
+    public FixedUrlStreamFactory(URL url) {
+        this.setUrl(Objects.requireNonNull(url, "Parameter 'url' must not be null"));
+    }
 
-  @Override
-  protected URL createUrl() throws IOException {
-    return this.getUrl();
-  }
+    @Override
+    protected URL createUrl() throws IOException {
+        return this.getUrl();
+    }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // --- Property access methods
+    // -----------------------------------------------
+    // ---------------------------------------------------------------------------
 
-  URL getUrl() {
-    return this.myUrl;
-  }
-  private void setUrl(URL url) {
-    this.myUrl = url;
-  }
+    URL getUrl() {
+        return this.myUrl;
+    }
+    private void setUrl(URL url) {
+        this.myUrl = url;
+    }
 
 }

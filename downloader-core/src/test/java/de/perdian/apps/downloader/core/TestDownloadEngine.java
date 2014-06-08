@@ -32,217 +32,217 @@ import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder;
 
 public class TestDownloadEngine {
 
-  private FileSystem myFileSystem = null;
-  private DownloadEngine myEngine = null;
+    private FileSystem myFileSystem = null;
+    private DownloadEngine myEngine = null;
 
-  @Before
-  public void prepareProperties() throws IOException {
-    FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build(UUID.randomUUID().toString());
-    this.setFileSystem(fileSystem);
-    this.setEngine(new DownloadEngine(fileSystem.getPath("target/")));
-  }
+    @Before
+    public void prepareProperties() throws IOException {
+        FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build(UUID.randomUUID().toString());
+        this.setFileSystem(fileSystem);
+        this.setEngine(new DownloadEngine(fileSystem.getPath("target/")));
+    }
 
-  @After
-  public void cleanupProperties() throws IOException {
-    this.getFileSystem().close();
-  }
+    @After
+    public void cleanupProperties() throws IOException {
+        this.getFileSystem().close();
+    }
 
-  @Test
-  public void completeCycleOkay() throws Exception {
+    @Test
+    public void completeCycleOkay() throws Exception {
 
-    DownloadProgressListener progressListener = Mockito.mock(DownloadProgressListener.class);
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
+        DownloadProgressListener progressListener = Mockito.mock(DownloadProgressListener.class);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
 
-    byte[] streamBytes = "TEST".getBytes();
-    DownloadStreamFactory contentFactory = Mockito.mock(DownloadStreamFactory.class);
-    Mockito.when(contentFactory.size()).thenReturn(Long.valueOf(streamBytes.length));
-    Mockito.when(contentFactory.openStream()).thenReturn(new ByteArrayInputStream(streamBytes));
+        byte[] streamBytes = "TEST".getBytes();
+        DownloadStreamFactory contentFactory = Mockito.mock(DownloadStreamFactory.class);
+        Mockito.when(contentFactory.size()).thenReturn(Long.valueOf(streamBytes.length));
+        Mockito.when(contentFactory.openStream()).thenReturn(new ByteArrayInputStream(streamBytes));
 
-    DownloadRequest request = new DownloadRequest();
-    request.setTargetFileName("abc.def");
-    request.setContentFactory(contentFactory);
+        DownloadRequest request = new DownloadRequest();
+        request.setTargetFileName("abc.def");
+        request.setContentFactory(contentFactory);
 
-    this.getEngine().addListener(listener);
-    DownloadJob job = this.getEngine().submit(request);
-    job.addProgressListener(progressListener);
-    this.getEngine().waitUntilAllDownloadsComplete();
+        this.getEngine().addListener(listener);
+        DownloadJob job = this.getEngine().submit(request);
+        job.addProgressListener(progressListener);
+        this.getEngine().waitUntilAllDownloadsComplete();
 
-    Assert.assertNull(job.getCancelTime());
-    Assert.assertNotNull(job.getEndTime());
-    Assert.assertNull(job.getError());
-    Assert.assertSame(this.getEngine(), job.getOwner());
-    Assert.assertNotNull(job.getScheduleTime());
-    Assert.assertNotNull(job.getStartTime());
-    Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
-    Assert.assertArrayEquals(streamBytes, Files.readAllBytes(job.getTargetFile()));
+        Assert.assertNull(job.getCancelTime());
+        Assert.assertNotNull(job.getEndTime());
+        Assert.assertNull(job.getError());
+        Assert.assertSame(this.getEngine(), job.getOwner());
+        Assert.assertNotNull(job.getScheduleTime());
+        Assert.assertNotNull(job.getStartTime());
+        Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
+        Assert.assertArrayEquals(streamBytes, Files.readAllBytes(job.getTargetFile()));
 
-    Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
-    Mockito.verify(listener).onJobStarted(Matchers.eq(job));
-    Mockito.verify(listener).onJobCompleted(Matchers.eq(job));
-    Mockito.verifyNoMoreInteractions(listener);
-    Mockito.verify(progressListener, Mockito.atLeast(1)).onProgress(Matchers.eq(job), Matchers.anyLong(), Matchers.anyLong());
+        Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
+        Mockito.verify(listener).onJobStarted(Matchers.eq(job));
+        Mockito.verify(listener).onJobCompleted(Matchers.eq(job));
+        Mockito.verifyNoMoreInteractions(listener);
+        Mockito.verify(progressListener, Mockito.atLeast(1)).onProgress(Matchers.eq(job), Matchers.anyLong(), Matchers.anyLong());
 
-  }
+    }
 
-  @Test
-  public void completeCycleErrorInStreamCreation() throws Exception {
+    @Test
+    public void completeCycleErrorInStreamCreation() throws Exception {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    DownloadProgressListener progressListener = Mockito.mock(DownloadProgressListener.class);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        DownloadProgressListener progressListener = Mockito.mock(DownloadProgressListener.class);
 
-    IOException streamException = new IOException("ERROR");
-    DownloadStreamFactory contentFactory = Mockito.mock(DownloadStreamFactory.class);
-    Mockito.when(contentFactory.size()).thenReturn(Long.valueOf(-1));
-    Mockito.when(contentFactory.openStream()).thenThrow(streamException);
+        IOException streamException = new IOException("ERROR");
+        DownloadStreamFactory contentFactory = Mockito.mock(DownloadStreamFactory.class);
+        Mockito.when(contentFactory.size()).thenReturn(Long.valueOf(-1));
+        Mockito.when(contentFactory.openStream()).thenThrow(streamException);
 
-    DownloadRequest request = new DownloadRequest();
-    request.setTargetFileName("abc.def");
-    request.setContentFactory(contentFactory);
+        DownloadRequest request = new DownloadRequest();
+        request.setTargetFileName("abc.def");
+        request.setContentFactory(contentFactory);
 
-    this.getEngine().addListener(listener);
-    DownloadJob job = this.getEngine().submit(request);
-    job.addProgressListener(progressListener);
-    this.getEngine().waitUntilAllDownloadsComplete();
+        this.getEngine().addListener(listener);
+        DownloadJob job = this.getEngine().submit(request);
+        job.addProgressListener(progressListener);
+        this.getEngine().waitUntilAllDownloadsComplete();
 
-    Assert.assertNull(job.getCancelTime());
-    Assert.assertNotNull(job.getEndTime());
-    Assert.assertSame(streamException, job.getError());
-    Assert.assertSame(this.getEngine(), job.getOwner());
-    Assert.assertNotNull(job.getScheduleTime());
-    Assert.assertNotNull(job.getStartTime());
-    Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
+        Assert.assertNull(job.getCancelTime());
+        Assert.assertNotNull(job.getEndTime());
+        Assert.assertSame(streamException, job.getError());
+        Assert.assertSame(this.getEngine(), job.getOwner());
+        Assert.assertNotNull(job.getScheduleTime());
+        Assert.assertNotNull(job.getStartTime());
+        Assert.assertEquals(DownloadStatus.COMPLETED, job.getStatus());
 
-    Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
-    Mockito.verify(listener).onJobStarted(Matchers.eq(job));
-    Mockito.verify(listener).onJobCompleted(Matchers.eq(job));
-    Mockito.verifyNoMoreInteractions(listener);
-    Mockito.verifyNoMoreInteractions(progressListener);
+        Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
+        Mockito.verify(listener).onJobStarted(Matchers.eq(job));
+        Mockito.verify(listener).onJobCompleted(Matchers.eq(job));
+        Mockito.verifyNoMoreInteractions(listener);
+        Mockito.verifyNoMoreInteractions(progressListener);
 
-  }
+    }
 
-  @Test(expected=NullPointerException.class)
-  public void submitWithNullTargetFileName() {
-    DownloadRequest request = new DownloadRequest();
-    request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
-    request.setTargetFileName(null);
-    this.getEngine().submit(request);
-  }
+    @Test(expected = NullPointerException.class)
+    public void submitWithNullTargetFileName() {
+        DownloadRequest request = new DownloadRequest();
+        request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
+        request.setTargetFileName(null);
+        this.getEngine().submit(request);
+    }
 
-  @Test(expected=NullPointerException.class)
-  public void submitWithNullContentFactory() {
-    DownloadRequest request = new DownloadRequest();
-    request.setContentFactory(null);
-    request.setTargetFileName("targetFileName");
-    this.getEngine().submit(request);
-  }
+    @Test(expected = NullPointerException.class)
+    public void submitWithNullContentFactory() {
+        DownloadRequest request = new DownloadRequest();
+        request.setContentFactory(null);
+        request.setTargetFileName("targetFileName");
+        this.getEngine().submit(request);
+    }
 
-  @Test
-  public void submitWithValidatorReject() throws Exception {
+    @Test
+    public void submitWithValidatorReject() throws Exception {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    Mockito.doThrow(new DownloadRejectedException("X")).when(listener).onRequestSubmitted(Matchers.any(DownloadRequest.class));
-    this.getEngine().addListener(listener);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        Mockito.doThrow(new DownloadRejectedException("X")).when(listener).onRequestSubmitted(Matchers.any(DownloadRequest.class));
+        this.getEngine().addListener(listener);
 
-    DownloadRequest request = new DownloadRequest();
-    request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
-    request.setTargetFileName("targetFileName");
+        DownloadRequest request = new DownloadRequest();
+        request.setContentFactory(Mockito.mock(DownloadStreamFactory.class));
+        request.setTargetFileName("targetFileName");
 
-    Assert.assertNull(this.getEngine().submit(request));
-    Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
-    Mockito.verifyNoMoreInteractions(listener);
+        Assert.assertNull(this.getEngine().submit(request));
+        Mockito.verify(listener).onRequestSubmitted(Matchers.eq(request));
+        Mockito.verifyNoMoreInteractions(listener);
 
-  }
+    }
 
-  @Test(expected=IllegalArgumentException.class)
-  public void updateProcessorCountNegativeValue() {
-    this.getEngine().setProcessorCount(-1);
-  }
+    @Test(expected = IllegalArgumentException.class)
+    public void updateProcessorCountNegativeValue() {
+        this.getEngine().setProcessorCount(-1);
+    }
 
-  @Test
-  public void updateProcessorCountSameValue() {
+    @Test
+    public void updateProcessorCountSameValue() {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    this.getEngine().addListener(listener);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        this.getEngine().addListener(listener);
 
-    this.getEngine().setProcessorCount(this.getEngine().getProcessorCount());
-    Mockito.verifyNoMoreInteractions(listener);
+        this.getEngine().setProcessorCount(this.getEngine().getProcessorCount());
+        Mockito.verifyNoMoreInteractions(listener);
 
-  }
+    }
 
-  @Test
-  public void updateProcessorCountNewValue() {
+    @Test
+    public void updateProcessorCountNewValue() {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    this.getEngine().addListener(listener);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        this.getEngine().addListener(listener);
 
-    int previousProcessorCount = this.getEngine().getProcessorCount();
-    this.getEngine().setProcessorCount(previousProcessorCount + 1);
-    Mockito.verify(listener).onProcessorCountUpdated(Matchers.eq(previousProcessorCount + 1));
+        int previousProcessorCount = this.getEngine().getProcessorCount();
+        this.getEngine().setProcessorCount(previousProcessorCount + 1);
+        Mockito.verify(listener).onProcessorCountUpdated(Matchers.eq(previousProcessorCount + 1));
 
-  }
+    }
 
-  @Test
-  public void cancelFromActiveJobs() throws Exception {
+    @Test
+    public void cancelFromActiveJobs() throws Exception {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    this.getEngine().addListener(listener);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        this.getEngine().addListener(listener);
 
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    this.getEngine().getActiveJobs().add(job);
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        this.getEngine().getActiveJobs().add(job);
 
-    // Cancelling the job does _not_ remove it from the list of waiting jobs!
-    // It simply sets the state to CANCELLED and informs everyone by generating
-    // an event. The actual removal is done by the processor thread. Since in
-    // this test we do not have a processor thread, the job will remain in the
-    // activeJobs list.
-    Assert.assertTrue(this.getEngine().cancelJob(job, null));
-    Assert.assertTrue(this.getEngine().getActiveJobs().contains(job));
-    Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
+        // Cancelling the job does _not_ remove it from the list of waiting
+        // jobs! It simply sets the state to CANCELLED and informs everyone by
+        // generating an event. The actual removal is done by the processor
+        // thread. Since in this test we do not have a processor thread, the
+        // job will remain in the activeJobs list.
+        Assert.assertTrue(this.getEngine().cancelJob(job, null));
+        Assert.assertTrue(this.getEngine().getActiveJobs().contains(job));
+        Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
 
-  }
+    }
 
-  @Test
-  public void cancelFromWaitingJobs() throws Exception {
+    @Test
+    public void cancelFromWaitingJobs() throws Exception {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    this.getEngine().addListener(listener);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        this.getEngine().addListener(listener);
 
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    this.getEngine().getWaitingJobs().add(job);
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        this.getEngine().getWaitingJobs().add(job);
 
-    Assert.assertTrue(this.getEngine().cancelJob(job, null));
-    Assert.assertFalse(this.getEngine().getWaitingJobs().contains(job));
-    Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
+        Assert.assertTrue(this.getEngine().cancelJob(job, null));
+        Assert.assertFalse(this.getEngine().getWaitingJobs().contains(job));
+        Mockito.verify(listener).onJobCancelled(Matchers.eq(job));
 
-  }
+    }
 
-  @Test
-  public void cancelNotInQueue() throws Exception {
+    @Test
+    public void cancelNotInQueue() throws Exception {
 
-    DownloadListener listener = Mockito.mock(DownloadListener.class);
-    this.getEngine().addListener(listener);
+        DownloadListener listener = Mockito.mock(DownloadListener.class);
+        this.getEngine().addListener(listener);
 
-    Assert.assertFalse(this.getEngine().cancelJob(Mockito.mock(DownloadJob.class), null));
-    Mockito.verify(listener, Mockito.never()).onJobCancelled(Matchers.any(DownloadJob.class));
+        Assert.assertFalse(this.getEngine().cancelJob(Mockito.mock(DownloadJob.class), null));
+        Mockito.verify(listener, Mockito.never()).onJobCancelled(Matchers.any(DownloadJob.class));
 
-  }
+    }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // -------------------------------------------------------------------------
 
-  private FileSystem getFileSystem() {
-    return this.myFileSystem;
-  }
-  private void setFileSystem(FileSystem fileSystem) {
-    this.myFileSystem = fileSystem;
-  }
+    private FileSystem getFileSystem() {
+        return this.myFileSystem;
+    }
+    private void setFileSystem(FileSystem fileSystem) {
+        this.myFileSystem = fileSystem;
+    }
 
-  private DownloadEngine getEngine() {
-    return this.myEngine;
-  }
-  private void setEngine(DownloadEngine engine) {
-    this.myEngine = engine;
-  }
+    private DownloadEngine getEngine() {
+        return this.myEngine;
+    }
+    private void setEngine(DownloadEngine engine) {
+        this.myEngine = engine;
+    }
 
 }

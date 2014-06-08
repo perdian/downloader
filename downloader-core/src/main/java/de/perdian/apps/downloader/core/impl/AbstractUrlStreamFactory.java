@@ -2,12 +2,12 @@
  * Copyright 2013 Christian Robert
  *
  * Licimport java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
-import de.perdian.apps.downloader.core.DownloadStreamFactory;
-
+ * import java.io.InputStream;
+ * import java.net.URL;
+ * import java.net.URLConnection;
+ *
+ * import de.perdian.apps.downloader.core.DownloadStreamFactory;
+ *
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -28,32 +28,32 @@ import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
 public abstract class AbstractUrlStreamFactory implements DownloadStreamFactory {
 
-  static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
-  private URL myCachedUrl = null;
+    private URL cachedUrl = null;
 
-  @Override
-  public InputStream openStream() throws IOException {
-    return this.ensureCachedUrl().openStream();
-  }
-
-  @Override
-  public long size() throws IOException {
-    URLConnection urlConnection = this.ensureCachedUrl().openConnection();
-    return urlConnection.getContentLengthLong();
-  }
-
-  protected abstract URL createUrl() throws IOException;
-
-  // ---------------------------------------------------------------------------
-  // ---  Property access methods  ---------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  private URL ensureCachedUrl() throws IOException {
-    if(this.myCachedUrl == null) {
-      this.myCachedUrl = this.createUrl();
+    @Override
+    public InputStream openStream() throws IOException {
+        return this.ensureCachedUrl().openStream();
     }
-    return this.myCachedUrl;
-  }
+
+    @Override
+    public long size() throws IOException {
+        URLConnection urlConnection = this.ensureCachedUrl().openConnection();
+        return urlConnection.getContentLengthLong();
+    }
+
+    protected abstract URL createUrl() throws IOException;
+
+    // ---------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // ---------------------------------------------------------------------------
+
+    private URL ensureCachedUrl() throws IOException {
+        if (this.cachedUrl == null) {
+            this.cachedUrl = this.createUrl();
+        }
+        return this.cachedUrl;
+    }
 
 }

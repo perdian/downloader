@@ -17,32 +17,32 @@ package de.perdian.apps.downloader.core.support;
 
 public class DownloadTools {
 
-  public static String safeFileName(CharSequence source) {
-    StringBuilder result = new StringBuilder(source.length());
-    for(char c : source.toString().toCharArray()) {
-      if(Character.isWhitespace(c)) {
-        result.append(" ");
-      } else if(Character.isLetterOrDigit(c)) {
-        result.append(c);
-      } else if("[]()$§!+'-_.,".indexOf(c) > -1) {
-        result.append(c);
-      } else {
-        result.append("_");
-      }
+    public static String safeFileName(CharSequence source) {
+        StringBuilder result = new StringBuilder(source.length());
+        for (char c : source.toString().toCharArray()) {
+            if (Character.isWhitespace(c)) {
+                result.append(" ");
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            } else if ("[]()$§!+'-_.,".indexOf(c) > -1) {
+                result.append(c);
+            } else {
+                result.append("_");
+            }
+        }
+        return result.toString().trim();
     }
-    return result.toString().trim();
-  }
 
-  public static String safeUrl(String sourceUrlValue) {
-    StringBuilder safeUrl = new StringBuilder();
-    for(char c : sourceUrlValue.toCharArray()) {
-      if(Character.isWhitespace(c)) {
-        safeUrl.append("%20");
-      } else {
-        safeUrl.append(c);
-      }
+    public static String safeUrl(String sourceUrlValue) {
+        StringBuilder safeUrl = new StringBuilder();
+        for (char c : sourceUrlValue.toCharArray()) {
+            if (Character.isWhitespace(c)) {
+                safeUrl.append("%20");
+            } else {
+                safeUrl.append(c);
+            }
+        }
+        return safeUrl.toString();
     }
-    return safeUrl.toString();
-  }
 
 }

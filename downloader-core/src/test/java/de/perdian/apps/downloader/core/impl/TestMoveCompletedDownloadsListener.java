@@ -35,76 +35,75 @@ import de.perdian.apps.downloader.core.DownloadRequest;
 
 public class TestMoveCompletedDownloadsListener {
 
+    private FileSystem myFileSystem = null;
 
-  private FileSystem myFileSystem = null;
+    @Before
+    public void prepareFileSystem() throws IOException {
+        this.setFileSystem(MemoryFileSystemBuilder.newEmpty().build(UUID.randomUUID().toString()));
+    }
 
-  @Before
-  public void prepareFileSystem() throws IOException {
-    this.setFileSystem(MemoryFileSystemBuilder.newEmpty().build(UUID.randomUUID().toString()));
-  }
+    @After
+    public void cleanupFileSystem() throws IOException {
+        this.getFileSystem().close();
+    }
 
-  @After
-  public void cleanupFileSystem() throws IOException {
-    this.getFileSystem().close();
-  }
+    @Test
+    public void jobCompleted() throws Exception {
 
-  @Test
-  public void jobCompleted() throws Exception {
+        Path inFile = this.getFileSystem().getPath("working.txt");
+        Files.write(inFile, "test".getBytes(), StandardOpenOption.CREATE);
 
-    Path inFile = this.getFileSystem().getPath("working.txt");
-    Files.write(inFile, "test".getBytes(), StandardOpenOption.CREATE);
+        Path outDirectory = Files.createDirectory(this.getFileSystem().getPath("out/"));
 
-    Path outDirectory = Files.createDirectory(this.getFileSystem().getPath("out/"));
+        DownloadRequest request = new DownloadRequest();
+        request.setTargetFileName("42.txt");
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        Mockito.when(job.getCancelTime()).thenReturn(null);
+        Mockito.when(job.getRequest()).thenReturn(request);
+        Mockito.when(job.getTargetFile()).thenReturn(inFile);
 
-    DownloadRequest request = new DownloadRequest();
-    request.setTargetFileName("42.txt");
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    Mockito.when(job.getCancelTime()).thenReturn(null);
-    Mockito.when(job.getRequest()).thenReturn(request);
-    Mockito.when(job.getTargetFile()).thenReturn(inFile);
+        MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
+        listener.onJobCompleted(job);
 
-    MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
-    listener.onJobCompleted(job);
+        Path outFile = outDirectory.resolve("42.txt");
+        Assert.assertFalse(Files.exists(inFile));
+        Assert.assertTrue(Files.exists(outFile));
+        Assert.assertArrayEquals("test".getBytes(), Files.readAllBytes(outFile));
 
-    Path outFile = outDirectory.resolve("42.txt");
-    Assert.assertFalse(Files.exists(inFile));
-    Assert.assertTrue(Files.exists(outFile));
-    Assert.assertArrayEquals("test".getBytes(), Files.readAllBytes(outFile));
+    }
 
-  }
+    @Test
+    public void jobCompletedStatusCancelled() throws Exception {
 
-  @Test
-  public void jobCompletedStatusCancelled() throws Exception {
+        Path inFile = this.getFileSystem().getPath("working.txt");
+        Files.write(inFile, "test".getBytes(), StandardOpenOption.CREATE);
 
-    Path inFile = this.getFileSystem().getPath("working.txt");
-    Files.write(inFile, "test".getBytes(), StandardOpenOption.CREATE);
+        Path outDirectory = Files.createDirectory(this.getFileSystem().getPath("out/"));
 
-    Path outDirectory = Files.createDirectory(this.getFileSystem().getPath("out/"));
+        DownloadRequest request = new DownloadRequest();
+        request.setTargetFileName("42.txt");
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        Mockito.when(job.getCancelTime()).thenReturn(Long.valueOf(1L));
+        Mockito.when(job.getRequest()).thenReturn(request);
+        Mockito.when(job.getTargetFile()).thenReturn(inFile);
 
-    DownloadRequest request = new DownloadRequest();
-    request.setTargetFileName("42.txt");
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    Mockito.when(job.getCancelTime()).thenReturn(Long.valueOf(1L));
-    Mockito.when(job.getRequest()).thenReturn(request);
-    Mockito.when(job.getTargetFile()).thenReturn(inFile);
+        MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
+        listener.onJobCompleted(job);
 
-    MoveCompletedDownloadsListener listener = new MoveCompletedDownloadsListener(outDirectory);
-    listener.onJobCompleted(job);
+        Assert.assertFalse(Files.exists(inFile));
+        Assert.assertFalse(Files.exists(outDirectory.resolve("42.txt")));
 
-    Assert.assertFalse(Files.exists(inFile));
-    Assert.assertFalse(Files.exists(outDirectory.resolve("42.txt")));
+    }
 
-  }
+    // -------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // -------------------------------------------------------------------------
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  private FileSystem getFileSystem() {
-    return this.myFileSystem;
-  }
-  private void setFileSystem(FileSystem fileSystem) {
-    this.myFileSystem = fileSystem;
-  }
+    private FileSystem getFileSystem() {
+        return this.myFileSystem;
+    }
+    private void setFileSystem(FileSystem fileSystem) {
+        this.myFileSystem = fileSystem;
+    }
 
 }

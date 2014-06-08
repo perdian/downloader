@@ -20,62 +20,60 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 
 public class DownloadActionList {
 
-  static final Logger log = LogManager.getLogger(DownloadActionList.class);
+    static final Logger log = LoggerFactory.getLogger(DownloadActionList.class);
 
-  private List<DownloadAction> myActions = new CopyOnWriteArrayList<>();
+    private List<DownloadAction> actions = new CopyOnWriteArrayList<>();
 
-  public void executeActions(final DownloadEngine engine) {
-    List<DownloadAction> actions = this.getActions();
-    if(actions != null && actions.size() > 0) {
-      log.trace("Executing {} actions", actions.size());
-      final CountDownLatch latch = new CountDownLatch(actions.size());
-      for(final DownloadAction action : actions) {
-        Thread actionThread = new Thread(new Runnable() {
-          @Override public void run() {
-            try {
-              log.debug("Executing action: {}", action);
-              action.execute(engine);
-            } catch(Exception e) {
-              log.error("Cannot execute action: " + action, e);
-            } finally {
-              latch.countDown();
+    public void executeActions(DownloadEngine engine) {
+        List<DownloadAction> actions = this.getActions();
+        if (actions != null && actions.size() > 0) {
+            log.trace("Executing {} actions", actions.size());
+            CountDownLatch latch = new CountDownLatch(actions.size());
+            for (DownloadAction action : actions) {
+                Thread actionThread = new Thread(() -> {
+                    try {
+                        log.debug("Executing action: {}", action);
+                        action.execute(engine);
+                    } catch (Exception e) {
+                        log.error("Cannot execute action: " + action, e);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+                actionThread.setName(DownloadAction.class.getSimpleName() + "[" + action + "]");
+                actionThread.start();
             }
-          }
-        });
-        actionThread.setName(DownloadAction.class.getSimpleName() + "[" + action + "]");
-        actionThread.start();
-      }
-      try {
-        latch.await();
-      } catch(InterruptedException e) {
-        // Ignore here
-      }
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                // Ignore here
+            }
+        }
+
     }
 
-  }
+    // ---------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // ---------------------------------------------------------------------------
 
-  // ---------------------------------------------------------------------------
-  // ---  Property access methods  ---------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  public void addActions(Collection<? extends DownloadAction> actions) {
-    this.getActions().addAll(actions);
-  }
-  public void addAction(DownloadAction action) {
-    this.getActions().add(action);
-  }
-  List<DownloadAction> getActions() {
-    return this.myActions;
-  }
-  void setActions(List<DownloadAction> actions) {
-    this.myActions = actions;
-  }
+    public void addActions(Collection<? extends DownloadAction> actions) {
+        this.getActions().addAll(actions);
+    }
+    public void addAction(DownloadAction action) {
+        this.getActions().add(action);
+    }
+    List<DownloadAction> getActions() {
+        return this.actions;
+    }
+    void setActions(List<DownloadAction> actions) {
+        this.actions = actions;
+    }
 
 }

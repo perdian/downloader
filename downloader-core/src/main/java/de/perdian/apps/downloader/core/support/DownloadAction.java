@@ -26,11 +26,12 @@ import de.perdian.apps.downloader.core.DownloadEngine;
  * @author Christian Robert
  */
 
+@FunctionalInterface
 public interface DownloadAction {
 
-  /**
-   * Executes the action within the context of the given engine
-   */
-  public void execute(DownloadEngine engine) throws Exception;
+    /**
+     * Executes the action within the context of the given engine
+     */
+    void execute(DownloadEngine engine) throws Exception;
 
 }

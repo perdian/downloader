@@ -23,42 +23,49 @@ package de.perdian.apps.downloader.core;
 
 public interface DownloadListener {
 
-  /**
-   * Called when the {@code processorCount} property of the
-   * {@link DownloadEngine} has been changed
-   */
-  public void onProcessorCountUpdated(int newProcessorCount);
+    /**
+     * Called when the {@code processorCount} property of the
+     * {@link DownloadEngine} has been changed
+     */
+    default void onProcessorCountUpdated(int newProcessorCount) {
+    }
 
-  /**
-   * Called when a new request is about to be added into a
-   * {@link DownloadEngine}
-   *
-   * @throws DownloadRejectedException
-   *   thrown to indicate that the request should be discarded and no further
-   *   interaction within the {@link DownloadEngine} should be performed.
-   */
-  public void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException;
+    /**
+     * Called when a new request is about to be added into a
+     * {@link DownloadEngine}
+     *
+     * @throws DownloadRejectedException
+     *     thrown to indicate that the request should be discarded and no
+     *     further interaction within the {@link DownloadEngine} should be
+     *     performed.
+     */
+    default void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+    }
 
-  /**
-   * Called when a new job has been submitted into the {@link DownloadEngine}
-   * instance
-   */
-  public void onJobScheduled(DownloadJob job);
+    /**
+     * Called when a new job has been submitted into the {@link DownloadEngine}
+     * instance
+     */
+    default void onJobScheduled(DownloadJob job) {
+    }
 
-  /**
-   * Called when a job has been started, that is: it's execution has begone
-   */
-  public void onJobStarted(DownloadJob job);
+    /**
+     * Called when a job has been started, that is: it's execution has begone
+     */
+    default void onJobStarted(DownloadJob job) {
+    }
 
-  /**
-   * Called when a job has been completed by a {@link DownloadEngine} instance
-   */
-  public void onJobCompleted(DownloadJob job);
+    /**
+     * Called when a job has been completed by a {@link DownloadEngine} instance
+     */
+    default void onJobCompleted(DownloadJob job) {
+    }
 
-  /**
-   * Called when a job has been cancelled, which means it has been removed from
-   * the queue of waiting jobs
-   */
-  public void onJobCancelled(DownloadJob job);
+    /**
+     * Called when a job has been cancelled, which means it has been removed
+     * from the queue of waiting jobs
+     */
+    default void onJobCancelled(DownloadJob job) {
+    }
 
 }

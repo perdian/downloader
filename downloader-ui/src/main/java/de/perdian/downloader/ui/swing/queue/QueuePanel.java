@@ -19,7 +19,7 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 import de.perdian.apps.downloader.core.DownloadJob;
-import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
+import de.perdian.apps.downloader.core.DownloadListener;
 import de.perdian.downloader.ui.swing.support.AbstractListPanel;
 
 /**
@@ -52,7 +52,7 @@ public class QueuePanel extends AbstractListPanel<DownloadJob, QueueJobPanel> {
   // --- Inner classes ---------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  class QueuePanelDownloadListener extends DownloadListenerSkeleton {
+  class QueuePanelDownloadListener implements DownloadListener {
 
     @Override
     public void onJobScheduled(DownloadJob job) {

@@ -32,7 +32,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
-import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
+import de.perdian.apps.downloader.core.DownloadListener;
 import de.perdian.downloader.ui.swing.resources.Icons;
 
 /**
@@ -88,7 +88,7 @@ public class InfoPanel extends JPanel {
   // --- Inner classes ---------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  class InfoPanelDownloadListener extends DownloadListenerSkeleton {
+  class InfoPanelDownloadListener implements DownloadListener {
 
     @Override
     public void onProcessorCountUpdated(final int newProcessorCount) {

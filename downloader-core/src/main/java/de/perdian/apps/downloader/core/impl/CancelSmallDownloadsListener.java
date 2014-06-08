@@ -17,11 +17,11 @@ package de.perdian.apps.downloader.core.impl;
 
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.DownloadJob;
-import de.perdian.apps.downloader.core.DownloadListenerSkeleton;
+import de.perdian.apps.downloader.core.DownloadListener;
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
 /**
@@ -30,42 +30,42 @@ import de.perdian.apps.downloader.core.DownloadStreamFactory;
  * @author Christian Robert
  */
 
-public class CancelSmallDownloadsListener extends DownloadListenerSkeleton {
+public class CancelSmallDownloadsListener implements DownloadListener {
 
-  private static final Logger log = LogManager.getLogger(CancelSmallDownloadsListener.class);
+    private static final Logger log = LoggerFactory.getLogger(CancelSmallDownloadsListener.class);
 
-  private long myThreshold = 0;
+    private long myThreshold = 0;
 
-  public CancelSmallDownloadsListener(long threshold) {
-    this.setThreshold(threshold);
-  }
-
-  @Override
-  public void onJobStarted(DownloadJob job) {
-    DownloadStreamFactory streamFactory = job.getRequest().getContentFactory();
-    try {
-      long streamSize = streamFactory.size();
-      if(streamSize >= 0 && streamSize < this.getThreshold()) {
-        StringBuilder cancelMessage = new StringBuilder();
-        cancelMessage.append("Download too small! ");
-        cancelMessage.append("Minimum: ").append(this.getThreshold()).append(" bytes. ");
-        cancelMessage.append("Size: ").append(streamSize).append(" bytes.");
-        job.cancel(cancelMessage.toString());
-      }
-    } catch(IOException e) {
-      log.debug("Cannot validate size for stream: " + streamFactory, e);
+    public CancelSmallDownloadsListener(long threshold) {
+        this.setThreshold(threshold);
     }
-  }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    @Override
+    public void onJobStarted(DownloadJob job) {
+        DownloadStreamFactory streamFactory = job.getRequest().getContentFactory();
+        try {
+            long streamSize = streamFactory.size();
+            if (streamSize >= 0 && streamSize < this.getThreshold()) {
+                StringBuilder cancelMessage = new StringBuilder();
+                cancelMessage.append("Download too small! ");
+                cancelMessage.append("Minimum: ").append(this.getThreshold()).append(" bytes. ");
+                cancelMessage.append("Size: ").append(streamSize).append(" bytes.");
+                job.cancel(cancelMessage.toString());
+            }
+        } catch (IOException e) {
+            log.debug("Cannot validate size for stream: " + streamFactory, e);
+        }
+    }
 
-  public long getThreshold() {
-    return this.myThreshold;
-  }
-  public void setThreshold(long threshold) {
-    this.myThreshold = threshold;
-  }
+    // -------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // -------------------------------------------------------------------------
+
+    public long getThreshold() {
+        return this.myThreshold;
+    }
+    public void setThreshold(long threshold) {
+        this.myThreshold = threshold;
+    }
 
 }

@@ -24,10 +24,10 @@ package de.perdian.apps.downloader.core;
 
 public class DownloadRejectedException extends Exception {
 
-  static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
-  public DownloadRejectedException(String message) {
-    super(message);
-  }
+    public DownloadRejectedException(String message) {
+        super(message);
+    }
 
 }

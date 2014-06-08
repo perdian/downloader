@@ -33,27 +33,29 @@ import java.io.Serializable;
 
 public interface DownloadStreamFactory extends Serializable {
 
-  /**
-   * Open the stream from which to read the information that should be
-   * downloaded to the local file system
-   *
-   * @return
-   *   the stream
-   * @throws IOException
-   *   thrown if the remote ressource cannot be accessed
-   */
-  public InputStream openStream() throws IOException;
+    /**
+     * Open the stream from which to read the information that should be
+     * downloaded to the local file system
+     *
+     * @return
+     *     the stream
+     * @throws IOException
+     *     thrown if the remote ressource cannot be accessed
+     */
+    InputStream openStream() throws IOException;
 
-  /**
-   * Returns the size of the remote resource in bytes.
-   *
-   * @return
-   *   the size of the remote resource. If the remote resource doesn't provide
-   *   a way of determining it's size in advance, this method should return the
-   *   special value of <code>-1</code>.
-   * @throws IOException
-   *   thrown if the remote ressource cannot be accessed
-   */
-  public long size() throws IOException;
+    /**
+     * Returns the size of the remote resource in bytes.
+     *
+     * @return
+     *     the size of the remote resource. If the remote resource doesn't
+     *     provide a way of determining it's size in advance, this method should
+     *     return the special value of <code>-1</code>.
+     * @throws IOException
+     *     thrown if the remote ressource cannot be accessed
+     */
+    default long size() throws IOException {
+        return -1;
+    }
 
 }

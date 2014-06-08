@@ -20,8 +20,8 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
 
@@ -33,7 +33,7 @@ import de.perdian.apps.downloader.core.DownloadEngine;
 
 public class DownloadGui {
 
-  static final Logger log = LogManager.getLogger(DownloadGui.class);
+  static final Logger log = LoggerFactory.getLogger(DownloadGui.class);
 
   /**
    * Launches the UI application

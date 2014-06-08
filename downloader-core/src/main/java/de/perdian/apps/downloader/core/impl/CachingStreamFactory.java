@@ -34,131 +34,132 @@ import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
 public class CachingStreamFactory implements DownloadStreamFactory {
 
-  static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
-  private DownloadStreamFactory myDelegee = null;
-  private transient byte[] myCachedBytes = null;
-  private transient Long myCachedSize = null;
+    private DownloadStreamFactory delegee = null;
+    private transient byte[] cachedBytes = null;
+    private transient Long cachedSize = null;
 
-  public CachingStreamFactory(DownloadStreamFactory delegee) {
-    this.setDelegee(Objects.requireNonNull(delegee, "Parameter 'delegee' must not be null!"));
-  }
-
-  @Override
-  public InputStream openStream() throws IOException {
-    byte[] cachedBytes = this.getCachedBytes();
-    if(cachedBytes != null) {
-      return new ByteArrayInputStream(cachedBytes);
-    } else {
-      final InputStream realStream = this.getDelegee().openStream();
-      final ByteArrayOutputStream cacheStream = new ByteArrayOutputStream();
-      return new FilterInputStream(realStream) {
-
-        private IOException myReadException = null;
-
-        @Override
-        public int read() throws IOException {
-          try {
-            int data = super.read();
-            if(data > -1) {
-              cacheStream.write(data);
-            }
-            return data;
-          } catch(IOException e) {
-            this.setReadException(e);
-            throw e;
-          }
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-          try {
-            int bytesRead = super.read(b);
-            if(bytesRead > 0) {
-              cacheStream.write(b, 0, bytesRead);
-            }
-            return bytesRead;
-          } catch(IOException e) {
-            this.setReadException(e);
-            throw e;
-          }
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-          try {
-            int bytesRead = super.read(b, off, len);
-            if(bytesRead > 0) {
-              cacheStream.write(b, off, bytesRead);
-            }
-            return bytesRead;
-          } catch(IOException e) {
-            this.setReadException(e);
-            throw e;
-          }
-        }
-
-        @Override
-        public void close() throws IOException {
-          super.close();
-          if(this.getReadException() == null) {
-            cacheStream.flush();
-            CachingStreamFactory.this.setCachedBytes(cacheStream.toByteArray());
-          }
-        }
-
-        // ---------------------------------------------------------------------
-        // --- Property access methods -----------------------------------------
-        // ---------------------------------------------------------------------
-
-        private IOException getReadException() {
-          return this.myReadException;
-        }
-        private void setReadException(IOException readException) {
-          this.myReadException = readException;
-        }
-
-      };
+    public CachingStreamFactory(DownloadStreamFactory delegee) {
+        this.setDelegee(Objects.requireNonNull(delegee, "Parameter 'delegee' must not be null!"));
     }
-  }
 
-  @Override
-  public long size() throws IOException {
-    Long cachedSize = this.getCachedSize();
-    if(cachedSize != null && cachedSize.longValue() > -1) {
-      return cachedSize.longValue();
-    } else {
-      long realSize = this.getDelegee().size();
-      if(realSize > -1) {
-        this.setCachedSize(Long.valueOf(realSize));
-      }
-      return realSize;
+    @Override
+    public InputStream openStream() throws IOException {
+        byte[] cachedBytes = this.getCachedBytes();
+        if (cachedBytes != null) {
+            return new ByteArrayInputStream(cachedBytes);
+        } else {
+            final InputStream realStream = this.getDelegee().openStream();
+            final ByteArrayOutputStream cacheStream = new ByteArrayOutputStream();
+            return new FilterInputStream(realStream) {
+
+                private IOException myReadException = null;
+
+                @Override
+                public int read() throws IOException {
+                    try {
+                        int data = super.read();
+                        if (data > -1) {
+                            cacheStream.write(data);
+                        }
+                        return data;
+                    } catch (IOException e) {
+                        this.setReadException(e);
+                        throw e;
+                    }
+                }
+
+                @Override
+                public int read(byte[] b) throws IOException {
+                    try {
+                        int bytesRead = super.read(b);
+                        if (bytesRead > 0) {
+                            cacheStream.write(b, 0, bytesRead);
+                        }
+                        return bytesRead;
+                    } catch (IOException e) {
+                        this.setReadException(e);
+                        throw e;
+                    }
+                }
+
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    try {
+                        int bytesRead = super.read(b, off, len);
+                        if (bytesRead > 0) {
+                            cacheStream.write(b, off, bytesRead);
+                        }
+                        return bytesRead;
+                    } catch (IOException e) {
+                        this.setReadException(e);
+                        throw e;
+                    }
+                }
+
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    if (this.getReadException() == null) {
+                        cacheStream.flush();
+                        CachingStreamFactory.this.setCachedBytes(cacheStream.toByteArray());
+                    }
+                }
+
+                // -------------------------------------------------------------
+                // --- Property access methods ---------------------------------
+                // -------------------------------------------------------------
+
+                private IOException getReadException() {
+                    return this.myReadException;
+                }
+                private void setReadException(IOException readException) {
+                    this.myReadException = readException;
+                }
+
+            };
+        }
     }
-  }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    @Override
+    public long size() throws IOException {
+        Long cachedSize = this.getCachedSize();
+        if (cachedSize != null && cachedSize.longValue() > -1) {
+            return cachedSize.longValue();
+        } else {
+            long realSize = this.getDelegee().size();
+            if (realSize > -1) {
+                this.setCachedSize(Long.valueOf(realSize));
+            }
+            return realSize;
+        }
+    }
 
-  DownloadStreamFactory getDelegee() {
-    return this.myDelegee;
-  }
-  void setDelegee(DownloadStreamFactory delegee) {
-    this.myDelegee = delegee;
-  }
+    // ---------------------------------------------------------------------------
+    // --- Property access methods
+    // -----------------------------------------------
+    // ---------------------------------------------------------------------------
 
-  Long getCachedSize() {
-    return this.myCachedSize;
-  }
-  void setCachedSize(Long cachedSize) {
-    this.myCachedSize = cachedSize;
-  }
+    DownloadStreamFactory getDelegee() {
+        return this.delegee;
+    }
+    void setDelegee(DownloadStreamFactory delegee) {
+        this.delegee = delegee;
+    }
 
-  byte[] getCachedBytes() {
-    return this.myCachedBytes;
-  }
-  void setCachedBytes(byte[] cachedBytes) {
-    this.myCachedBytes = cachedBytes;
-  }
+    Long getCachedSize() {
+        return this.cachedSize;
+    }
+    void setCachedSize(Long cachedSize) {
+        this.cachedSize = cachedSize;
+    }
+
+    byte[] getCachedBytes() {
+        return this.cachedBytes;
+    }
+    void setCachedBytes(byte[] cachedBytes) {
+        this.cachedBytes = cachedBytes;
+    }
 
 }

@@ -24,30 +24,30 @@ package de.perdian.apps.downloader.core;
 
 public enum DownloadStatus {
 
-  /**
-   * Signalizes that a {@link DownloadRequest} has been accepted by a
-   * {@link DownloadEngine} and is awaiting it's activation and actual download
-   * process.
-   */
-  SCHEDULED,
+    /**
+     * Signalizes that a {@link DownloadRequest} has been accepted by a
+     * {@link DownloadEngine} and is awaiting it's activation and actual
+     * download process.
+     */
+    SCHEDULED,
 
-  /**
-   * Signalizes that a {@link DownloadEngine} has started to process the data
-   * for a specific {@link DownloadJob} which means that a processor thread is
-   * reading bytes from a source and writing them into a target file.
-   */
-  ACTIVE,
+    /**
+     * Signalizes that a {@link DownloadEngine} has started to process the data
+     * for a specific {@link DownloadJob} which means that a processor thread is
+     * reading bytes from a source and writing them into a target file.
+     */
+    ACTIVE,
 
-  /**
-   * Signalizes that a {@link DownloadEngine} has completed the transfer process
-   * for a {@link DownloadJob}. No further interaction between the
-   * {@link DownloadEngine} and any other kind of system will be performed.
-   */
-  COMPLETED,
+    /**
+     * Signalizes that a {@link DownloadEngine} has completed the transfer
+     * process for a {@link DownloadJob}. No further interaction between the
+     * {@link DownloadEngine} and any other kind of system will be performed.
+     */
+    COMPLETED,
 
-  /**
-   * Signalizes that a download operation has been cancelled by the user.
-   */
-  CANCELLED,
+    /**
+     * Signalizes that a download operation has been cancelled by the user.
+     */
+    CANCELLED,
 
 }

@@ -35,106 +35,106 @@ import de.perdian.apps.downloader.core.DownloadRequest;
 
 public class TestIdentifierValidationListener {
 
-  private FileSystem myFileSystem = null;
+    private FileSystem myFileSystem = null;
 
-  @Before
-  public void prepareFileSystem() throws IOException {
-    this.setFileSystem(MemoryFileSystemBuilder.newEmpty().build(UUID.randomUUID().toString()));
-  }
+    @Before
+    public void prepareFileSystem() throws IOException {
+        this.setFileSystem(MemoryFileSystemBuilder.newEmpty().build(UUID.randomUUID().toString()));
+    }
 
-  @After
-  public void cleanupFileSystem() throws IOException {
-    this.getFileSystem().close();
-  }
+    @After
+    public void cleanupFileSystem() throws IOException {
+        this.getFileSystem().close();
+    }
 
-  @Test
-  public void requestSubmittedIdentifierNotExistingYet() throws Exception {
+    @Test
+    public void requestSubmittedIdentifierNotExistingYet() throws Exception {
 
-    DownloadRequest request = new DownloadRequest();
-    request.setId("42");
+        DownloadRequest request = new DownloadRequest();
+        request.setId("42");
 
-    Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
-    IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.onRequestSubmitted(request);
+        Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
+        IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
+        listener.onRequestSubmitted(request);
 
-  }
+    }
 
-  @Test(expected=DownloadRejectedException.class)
-  public void requestSubmittedIdentifierExisting() throws Exception {
+    @Test(expected = DownloadRejectedException.class)
+    public void requestSubmittedIdentifierExisting() throws Exception {
 
-    DownloadRequest request = new DownloadRequest();
-    request.setId("42");
+        DownloadRequest request = new DownloadRequest();
+        request.setId("42");
 
-    Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
-    Files.createDirectories(markerDirectory);
-    Path markerFile = markerDirectory.resolve("42.marker");
-    Files.createFile(markerFile);
+        Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
+        Files.createDirectories(markerDirectory);
+        Path markerFile = markerDirectory.resolve("42.marker");
+        Files.createFile(markerFile);
 
-    IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.onRequestSubmitted(request);
+        IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
+        listener.onRequestSubmitted(request);
 
-  }
+    }
 
-  @Test
-  public void jobCompleted() throws Exception {
+    @Test
+    public void jobCompleted() throws Exception {
 
-    DownloadRequest request = new DownloadRequest();
-    request.setId("42");
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    Mockito.when(job.getRequest()).thenReturn(request);
+        DownloadRequest request = new DownloadRequest();
+        request.setId("42");
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        Mockito.when(job.getRequest()).thenReturn(request);
 
-    Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
-    Path markerFile = markerDirectory.resolve("42.marker");
-    Assert.assertFalse(Files.exists(markerFile));
+        Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
+        Path markerFile = markerDirectory.resolve("42.marker");
+        Assert.assertFalse(Files.exists(markerFile));
 
-    IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.onJobCompleted(job);
-    Assert.assertTrue(Files.exists(markerFile));
+        IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
+        listener.onJobCompleted(job);
+        Assert.assertTrue(Files.exists(markerFile));
 
-  }
+    }
 
-  @Test
-  public void jobCompletedIdentifierNull() throws Exception {
+    @Test
+    public void jobCompletedIdentifierNull() throws Exception {
 
-    DownloadRequest request = new DownloadRequest();
-    request.setId(null);
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    Mockito.when(job.getRequest()).thenReturn(request);
+        DownloadRequest request = new DownloadRequest();
+        request.setId(null);
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        Mockito.when(job.getRequest()).thenReturn(request);
 
-    Path markerDirectory = Mockito.mock(Path.class);
-    IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.onJobCompleted(job);
-    Mockito.verifyNoMoreInteractions(markerDirectory);
+        Path markerDirectory = Mockito.mock(Path.class);
+        IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
+        listener.onJobCompleted(job);
+        Mockito.verifyNoMoreInteractions(markerDirectory);
 
-  }
+    }
 
-  @Test
-  public void jobCancelled() throws Exception {
+    @Test
+    public void jobCancelled() throws Exception {
 
-    DownloadRequest request = new DownloadRequest();
-    request.setId("42");
-    DownloadJob job = Mockito.mock(DownloadJob.class);
-    Mockito.when(job.getRequest()).thenReturn(request);
+        DownloadRequest request = new DownloadRequest();
+        request.setId("42");
+        DownloadJob job = Mockito.mock(DownloadJob.class);
+        Mockito.when(job.getRequest()).thenReturn(request);
 
-    Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
-    Path markerFile = markerDirectory.resolve("42.marker");
-    Assert.assertFalse(Files.exists(markerFile));
+        Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
+        Path markerFile = markerDirectory.resolve("42.marker");
+        Assert.assertFalse(Files.exists(markerFile));
 
-    IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
-    listener.onJobCancelled(job);
-    Assert.assertTrue(Files.exists(markerFile));
+        IdentifierValidationListener listener = new IdentifierValidationListener(markerDirectory);
+        listener.onJobCancelled(job);
+        Assert.assertTrue(Files.exists(markerFile));
 
-  }
+    }
 
-  // ---------------------------------------------------------------------------
-  // --- Property access methods -----------------------------------------------
-  // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- Property access methods ---------------------------------------------
+    // -------------------------------------------------------------------------
 
-  private FileSystem getFileSystem() {
-    return this.myFileSystem;
-  }
-  private void setFileSystem(FileSystem fileSystem) {
-    this.myFileSystem = fileSystem;
-  }
+    private FileSystem getFileSystem() {
+        return this.myFileSystem;
+    }
+    private void setFileSystem(FileSystem fileSystem) {
+        this.myFileSystem = fileSystem;
+    }
 
 }
