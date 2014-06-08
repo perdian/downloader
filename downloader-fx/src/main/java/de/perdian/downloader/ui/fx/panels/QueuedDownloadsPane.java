@@ -15,12 +15,53 @@
  */
 package de.perdian.downloader.ui.fx.panels;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.perdian.apps.downloader.core.DownloadEngine;
+import de.perdian.apps.downloader.core.DownloadJob;
+import de.perdian.apps.downloader.core.DownloadListener;
 
 public class QueuedDownloadsPane extends AbstractItemContainerPane<QueuedDownloadItemPane> {
 
+    static final Logger log = LoggerFactory.getLogger(QueuedDownloadsPane.class);
+
     public QueuedDownloadsPane(DownloadEngine engine) {
         this.setMinWidth(200);
+        engine.addListener(new DownloadListenerImpl());
+    }
+
+    @Override
+    protected QueuedDownloadItemPane createItemPane(DownloadJob job) {
+        return new QueuedDownloadItemPane(job);
+    }
+
+    // -------------------------------------------------------------------------
+    // --- Inner classes -------------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    class DownloadListenerImpl implements DownloadListener {
+
+        @Override
+        public void onJobScheduled(DownloadJob job) {
+            QueuedDownloadsPane.this.addDownloadJob(job);
+        }
+
+        @Override
+        public void onJobStarted(DownloadJob job) {
+            QueuedDownloadsPane.this.removeDownloadJob(job);
+        }
+
+        @Override
+        public void onJobCompleted(DownloadJob job) {
+            QueuedDownloadsPane.this.removeDownloadJob(job);
+        }
+
+        @Override
+        public void onJobCancelled(DownloadJob job) {
+            QueuedDownloadsPane.this.removeDownloadJob(job);
+        }
+
     }
 
 }

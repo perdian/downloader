@@ -16,20 +16,36 @@
 package de.perdian.downloader.ui.fx.panels;
 
 import de.perdian.apps.downloader.core.DownloadEngine;
+import de.perdian.apps.downloader.core.DownloadJob;
+import de.perdian.apps.downloader.core.DownloadListener;
 
 public class ActiveDownloadsPane extends AbstractItemContainerPane<ActiveDownloadItemPane> {
 
     public ActiveDownloadsPane(DownloadEngine engine) {
+        engine.addListener(new DownloadListenerImpl());
+    }
 
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
-this.addItemPanel(new ActiveDownloadItemPane());
+    @Override
+    protected ActiveDownloadItemPane createItemPane(DownloadJob job) {
+        ActiveDownloadItemPane itemPane = new ActiveDownloadItemPane(job);
+        return itemPane;
+    }
+
+    // -------------------------------------------------------------------------
+    // --- Inner classes -------------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    class DownloadListenerImpl implements DownloadListener {
+
+        @Override
+        public void onJobStarted(DownloadJob job) {
+            ActiveDownloadsPane.this.addDownloadJob(job);
+        }
+
+        @Override
+        public void onJobCompleted(DownloadJob job) {
+            ActiveDownloadsPane.this.removeDownloadJob(job);
+        }
 
     }
 

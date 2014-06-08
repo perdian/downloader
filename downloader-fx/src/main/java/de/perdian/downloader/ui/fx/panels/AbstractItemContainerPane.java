@@ -15,20 +15,27 @@
  */
 package de.perdian.downloader.ui.fx.panels;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import de.perdian.apps.downloader.core.DownloadJob;
 
-class AbstractItemContainerPane<T extends Node> extends BorderPane {
+abstract class AbstractItemContainerPane<T extends Node> extends BorderPane {
 
+    private Map<DownloadJob, T> itemPaneByJob = null;
     private VBox itemBox = null;
 
     AbstractItemContainerPane() {
 
-        VBox itemBox = new VBox(5d);
+        VBox itemBox = new VBox(5);
+        itemBox.setPadding(new Insets(5, 0, 5, 0));
 
         ScrollPane scrollPane = new ScrollPane(itemBox);
         scrollPane.setBorder(null);
@@ -36,6 +43,7 @@ class AbstractItemContainerPane<T extends Node> extends BorderPane {
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 
+        this.setItemPaneByJob(new IdentityHashMap<>());
         this.setCenter(scrollPane);
         this.setItemBox(itemBox);
         this.setMinSize(100, 200);
@@ -43,13 +51,25 @@ class AbstractItemContainerPane<T extends Node> extends BorderPane {
 
     }
 
-    void addItemPanel(T itemPanel) {
-        Platform.runLater(() -> this.getItemBox().getChildren().add(itemPanel));
+
+    protected void removeDownloadJob(DownloadJob job) {
+        synchronized (job) {
+            T itemPane = this.getItemPaneByJob().remove(job);
+            if (itemPane != null) {
+                Platform.runLater(() -> this.getItemBox().getChildren().remove(itemPane));
+            }
+        }
     }
 
-    void removeItemPanel(T itemPanel) {
-        Platform.runLater(() -> this.getItemBox().getChildren().remove(itemPanel));
+    protected void addDownloadJob(DownloadJob job) {
+        synchronized (job) {
+            T itemPane = this.createItemPane(job);
+            this.getItemPaneByJob().put(job, itemPane);
+            Platform.runLater(() -> this.getItemBox().getChildren().add(itemPane));
+        }
     }
+
+    protected abstract T createItemPane(DownloadJob job);
 
     // -------------------------------------------------------------------------
     // --- Property access methods ---------------------------------------------
@@ -60,6 +80,13 @@ class AbstractItemContainerPane<T extends Node> extends BorderPane {
     }
     private void setItemBox(VBox itemBox) {
         this.itemBox = itemBox;
+    }
+
+    private Map<DownloadJob, T> getItemPaneByJob() {
+        return this.itemPaneByJob;
+    }
+    private void setItemPaneByJob(Map<DownloadJob, T> itemPaneByJob) {
+        this.itemPaneByJob = itemPaneByJob;
     }
 
 }
