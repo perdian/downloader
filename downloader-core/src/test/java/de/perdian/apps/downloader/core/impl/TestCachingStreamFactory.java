@@ -133,7 +133,7 @@ public class TestCachingStreamFactory {
     @Test
     public void testSerializable() throws Exception {
 
-        CachingStreamFactory originalStreamFactory = new CachingStreamFactory(new DummyStreamFactory());
+        CachingStreamFactory originalStreamFactory = new CachingStreamFactory(() -> null);
         originalStreamFactory.setCachedBytes("test".getBytes());
         originalStreamFactory.setCachedSize(Long.valueOf(42));
 
@@ -147,27 +147,6 @@ public class TestCachingStreamFactory {
         CachingStreamFactory reloadedStreamFactory = (CachingStreamFactory)objectInStream.readObject();
         Assert.assertNull(reloadedStreamFactory.getCachedBytes());
         Assert.assertNull(reloadedStreamFactory.getCachedSize());
-        Assert.assertTrue(reloadedStreamFactory.getDelegee() instanceof DummyStreamFactory);
-
-    }
-
-    // -------------------------------------------------------------------------
-    // --- Inner classes -------------------------------------------------------
-    // -------------------------------------------------------------------------
-
-    static class DummyStreamFactory implements DownloadStreamFactory {
-
-        static final long serialVersionUID = 201306070935L;
-
-        @Override
-        public InputStream openStream() throws IOException {
-            return null;
-        }
-
-        @Override
-        public long size() throws IOException {
-            return 0;
-        }
 
     }
 

@@ -23,14 +23,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
-public abstract class AbstractUrlStreamFactory implements DownloadStreamFactory {
+public class UrlStreamFactory implements DownloadStreamFactory {
 
     static final long serialVersionUID = 1L;
 
+    private Supplier<URL> supplier = null;
     private URL cachedUrl = null;
+
+    public UrlStreamFactory(URL url) {
+        this(() -> url);
+    }
+
+    public UrlStreamFactory(Supplier<URL> supplier) {
+        this.setSupplier(Objects.requireNonNull(supplier, "Parameter 'supplier' must not be null"));
+    }
 
     @Override
     public InputStream openStream() throws IOException {
@@ -43,17 +54,22 @@ public abstract class AbstractUrlStreamFactory implements DownloadStreamFactory 
         return urlConnection.getContentLengthLong();
     }
 
-    protected abstract URL createUrl() throws IOException;
-
     // ---------------------------------------------------------------------------
     // --- Property access methods ---------------------------------------------
     // ---------------------------------------------------------------------------
 
     private URL ensureCachedUrl() throws IOException {
         if (this.cachedUrl == null) {
-            this.cachedUrl = this.createUrl();
+            this.cachedUrl = this.getSupplier().get();
         }
         return this.cachedUrl;
+    }
+
+    private Supplier<URL> getSupplier() {
+        return this.supplier;
+    }
+    private void setSupplier(Supplier<URL> supplier) {
+        this.supplier = supplier;
     }
 
 }

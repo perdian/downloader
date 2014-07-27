@@ -172,7 +172,8 @@ public class DownloadEngine {
         try {
             final CountDownLatch latch = new CountDownLatch(1);
             this.addListener(new DownloadListener() {
-                @Override public void onJobCompleted(DownloadJob job) {
+                @Override
+                public void onJobCompleted(DownloadJob job) {
                     synchronized (DownloadEngine.this) {
                         if (!DownloadEngine.this.isBusy()) {
                             DownloadEngine.this.removeListener(this);
