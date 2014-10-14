@@ -76,6 +76,8 @@ class QueuedDownloadItemPane extends GridPane {
 
         this.setPadding(new Insets(2, 5, 2, 5));
         this.setIconLabel(iconLabel);
+        this.setMaxWidth(200);
+
         this.add(iconLabel, 1, 1, 1, 2);
         this.add(titleLabel, 2, 1, 2, 1);
         this.add(forceStartButton, 2, 2, 1, 1);
