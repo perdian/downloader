@@ -22,9 +22,14 @@ package de.perdian.apps.downloader.core.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Supplier;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 
 import de.perdian.apps.downloader.core.DownloadStreamFactory;
 
@@ -32,44 +37,51 @@ public class UrlStreamFactory implements DownloadStreamFactory {
 
     static final long serialVersionUID = 1L;
 
-    private Supplier<URL> supplier = null;
-    private URL cachedUrl = null;
+    private Supplier<URL> urlSupplier = null;
+    private HttpEntity cachedEntity = null;
 
     public UrlStreamFactory(URL url) {
         this(() -> url);
     }
 
     public UrlStreamFactory(Supplier<URL> supplier) {
-        this.setSupplier(Objects.requireNonNull(supplier, "Parameter 'supplier' must not be null"));
+        this.setUrlSupplier(supplier);
     }
 
     @Override
     public InputStream openStream() throws IOException {
-        return this.ensureCachedUrl().openStream();
+        return this.ensureHttpEntity().getContent();
     }
 
     @Override
     public long size() throws IOException {
-        URLConnection urlConnection = this.ensureCachedUrl().openConnection();
-        return urlConnection.getContentLengthLong();
+        return this.ensureHttpEntity().getContentLength();
+    }
+
+    private synchronized HttpEntity ensureHttpEntity() throws IOException {
+        if (this.cachedEntity == null) {
+
+            HttpGet httpGet = new HttpGet(this.getUrlSupplier().get().toString());
+            httpGet.setHeader("User-Agent", UUID.randomUUID().toString());
+
+            HttpClient httpClient = HttpClients.custom().build();
+
+            HttpResponse httpResponse = httpClient.execute(httpGet);
+            this.cachedEntity = httpResponse.getEntity();
+
+        }
+        return this.cachedEntity;
     }
 
     // ---------------------------------------------------------------------------
     // --- Property access methods ---------------------------------------------
     // ---------------------------------------------------------------------------
 
-    private URL ensureCachedUrl() throws IOException {
-        if (this.cachedUrl == null) {
-            this.cachedUrl = this.getSupplier().get();
-        }
-        return this.cachedUrl;
+    private Supplier<URL> getUrlSupplier() {
+        return this.urlSupplier;
     }
-
-    private Supplier<URL> getSupplier() {
-        return this.supplier;
-    }
-    private void setSupplier(Supplier<URL> supplier) {
-        this.supplier = supplier;
+    private void setUrlSupplier(Supplier<URL> urlSupplier) {
+        this.urlSupplier = urlSupplier;
     }
 
 }
