@@ -200,12 +200,15 @@ public class DownloadEngine {
             // from where we come from we always leave in a consistent state
             this.getWaitingJobs().remove(job);
 
-            // Now make sure we have the right satus upon the job itself
-            job.setStartTime(System.currentTimeMillis());
-            job.setStatus(DownloadStatus.ACTIVE);
-            DownloadEngine.this.getActiveJobs().add(job);
+            // Now make sure we have the right status upon the job itself
+            if (!this.getActiveJobs().contains(job)) {
 
-            this.getExecutorService().submit(() -> this.runJob(job));
+                job.setStartTime(System.currentTimeMillis());
+                job.setStatus(DownloadStatus.ACTIVE);
+                this.getActiveJobs().add(job);
+                this.getExecutorService().submit(() -> this.runJob(job));
+
+            }
             return true;
 
         } else {
