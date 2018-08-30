@@ -94,10 +94,15 @@
                             <mainClass>de.perdian.apps.downloader.DownloaderApplication</mainClass>
                             <generateDiskImageFile>true</generateDiskImageFile>
                             <jvmVersion>9+</jvmVersion>
-                            <iconFile>tagtiger.icns</iconFile>
+                            <iconFile>downloader.icns</iconFile>
+                            <bundleName>Downloader</bundleName>
                             <additionalResources>
                                 <additionalResource>
                                     <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>LICENSE.txt</include>
+                                        <include>README.md</include>
+                                    </includes>
                                 </additionalResource>
                             </additionalResources>
                         </configuration>
