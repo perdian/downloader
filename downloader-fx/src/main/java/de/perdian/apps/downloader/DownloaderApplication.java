@@ -73,7 +73,7 @@ public class DownloaderApplication extends Application {
         primaryStage.setOnCloseRequest(event -> System.exit(0));
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
-        primaryStage.setTitle("Media downloader");
+        primaryStage.setTitle("Downloader");
         primaryStage.setWidth(1200);
         primaryStage.setHeight(600);
         primaryStage.show();
