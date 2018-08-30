@@ -43,7 +43,7 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
 
     @Override
     public String toString() {
-        ToStringBuilder toStringBuilder = new ToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE);
+        ToStringBuilder toStringBuilder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
         toStringBuilder.append("url", this.getUrl());
         return toStringBuilder.toString();
     }

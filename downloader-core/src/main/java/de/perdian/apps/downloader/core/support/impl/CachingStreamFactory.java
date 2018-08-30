@@ -45,6 +45,14 @@ public class CachingStreamFactory implements StreamFactory {
     }
 
     @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(this.getClass().getSimpleName());
+        result.append("[").append(this.getDelegee()).append("]");
+        return result.toString();
+    }
+
+    @Override
     public InputStream openStream() throws IOException {
         byte[] cachedBytes = this.getCachedBytes();
         if (cachedBytes != null) {
