@@ -1,0 +1,9 @@
+language: java
+jdk: oraclejdk9
+script:
+  - mvn clean package -B
+sudo: false
+notifications:
+  email: 
+    on_success: change
+    on_failure: always
