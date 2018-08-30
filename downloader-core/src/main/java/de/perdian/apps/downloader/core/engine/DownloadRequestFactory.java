@@ -16,7 +16,12 @@
 package de.perdian.apps.downloader.core.engine;
 
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory to create one or multiple {@link DownloadRequest} instance(s) from a specific URL
@@ -41,6 +46,19 @@ public interface DownloadRequestFactory {
      */
     default int getPriority() {
         return 0;
+    }
+
+    public static List<DownloadRequestFactory> createDefaultFactories() {
+
+        ServiceLoader<DownloadRequestFactory> requestFactoryServiceLoader = ServiceLoader.load(DownloadRequestFactory.class);
+        List<DownloadRequestFactory> requestFactories = requestFactoryServiceLoader.stream()
+            .map(provider -> provider.get())
+            .sorted(Comparator.comparing(DownloadRequestFactory::getPriority))
+            .collect(Collectors.toList());
+
+        LoggerFactory.getLogger(DownloadRequestFactory.class).info("Discovered {} implementation(s) of {}", requestFactories.size(), DownloadRequestFactory.class.getSimpleName());
+        return requestFactories;
+
     }
 
 }

@@ -59,7 +59,7 @@ public class DownloadEngine {
     private Queue<DownloadRequestWrapper> waitingRequests = null;
     private List<DownloadOperation> activeOperations = null;
     private Path targetDirectory = null;
-    private int processorCount = 0;
+    private int processorCount = 1;
     private int bufferSize = 1024 * 8; // 8 KiB
     private int notificationSize = 1024 * 64; // 64 KiB
 
