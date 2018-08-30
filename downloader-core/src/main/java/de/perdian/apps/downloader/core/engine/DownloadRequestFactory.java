@@ -15,6 +15,7 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +40,7 @@ public interface DownloadRequestFactory {
      *      a list of requests or {@code null} to signalize that the current factory is not able
      *      to analyze the URL
      */
-    List<DownloadRequest> createRequests(URL url);
+    List<DownloadRequest> createRequests(URL url) throws IOException;
 
     /**
      * Gets the priority of this factory
