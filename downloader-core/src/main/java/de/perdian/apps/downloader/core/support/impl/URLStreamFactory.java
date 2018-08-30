@@ -20,6 +20,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import de.perdian.apps.downloader.core.support.StreamFactory;
 
 public class URLStreamFactory implements StreamFactory {
@@ -29,6 +32,13 @@ public class URLStreamFactory implements StreamFactory {
 
     public URLStreamFactory(URL url) {
         this.setUrl(url);
+    }
+
+    @Override
+    public String toString() {
+        ToStringBuilder toStringBuilder = new ToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE);
+        toStringBuilder.append("url", this.getUrl());
+        return toStringBuilder.toString();
     }
 
     private synchronized URLConnection ensureUrlConnection() throws IOException {

@@ -18,6 +18,9 @@ package de.perdian.apps.downloader.core.support.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import de.perdian.apps.downloader.core.support.StreamFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,6 +39,13 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
     public OkHttpClientRequestStreamFactory(String url, OkHttpClient httpClient) {
         this.setUrl(url);
         this.setHttpClient(httpClient);
+    }
+
+    @Override
+    public String toString() {
+        ToStringBuilder toStringBuilder = new ToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE);
+        toStringBuilder.append("url", this.getUrl());
+        return toStringBuilder.toString();
     }
 
     private Response ensureResponse() throws IOException {
