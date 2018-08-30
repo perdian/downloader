@@ -15,19 +15,31 @@
  */
 package de.perdian.apps.downloader;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.perdian.apps.downloader.core.engine.DownloadRequestFactory;
+import javafx.scene.layout.Pane;
 
 public class DownloaderConfiguration {
 
-    private List<DownloadRequestFactory> requestFactories = null;
+    private List<DownloadRequestFactory> requestFactories = new ArrayList<>();
+    private Map<String, Pane> settingsPanes = new LinkedHashMap<>();
 
     public List<DownloadRequestFactory> getRequestFactories() {
         return this.requestFactories;
     }
     public void setRequestFactories(List<DownloadRequestFactory> requestFactories) {
         this.requestFactories = requestFactories;
+    }
+
+    public Map<String, Pane> getSettingsPanes() {
+        return this.settingsPanes;
+    }
+    public void setSettingsPanes(Map<String, Pane> settingsPanes) {
+        this.settingsPanes = settingsPanes;
     }
 
 }

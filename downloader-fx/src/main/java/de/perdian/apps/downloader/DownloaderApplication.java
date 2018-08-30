@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
 import de.perdian.apps.downloader.core.engine.DownloadRequestFactory;
+import de.perdian.apps.downloader.fx.engine.DownloadEngineSettingsPane;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -39,11 +40,11 @@ public class DownloaderApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        log.info("Creating DownloaderConfiguration");
-        DownloaderConfiguration configuration = this.createConfiguration();
-
         log.info("Creating DownloadEngine");
         DownloadEngine engine = this.createEngine();
+
+        log.info("Creating DownloaderConfiguration");
+        DownloaderConfiguration configuration = this.createConfiguration(engine);
 
         DownloaderUrlConsumer urlConsumer = new DownloaderUrlConsumer();
         urlConsumer.setEngine(engine);
@@ -72,9 +73,10 @@ public class DownloaderApplication extends Application {
         return new DownloadEngine(targetDirectory);
     }
 
-    protected DownloaderConfiguration createConfiguration() {
+    protected DownloaderConfiguration createConfiguration(DownloadEngine engine) {
         DownloaderConfiguration configuration = new DownloaderConfiguration();
-        configuration.setRequestFactories(DownloadRequestFactory.createDefaultFactories());
+        configuration.getSettingsPanes().put("Engine", new DownloadEngineSettingsPane(engine));
+        configuration.getRequestFactories().addAll(DownloadRequestFactory.createDefaultFactories());
         return configuration;
     }
 

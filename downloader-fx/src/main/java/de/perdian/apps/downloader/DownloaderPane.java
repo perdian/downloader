@@ -21,7 +21,6 @@ import java.util.function.Consumer;
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
 import de.perdian.apps.downloader.fx.engine.DownloadEngineActiveOperationsPane;
 import de.perdian.apps.downloader.fx.engine.DownloadEngineQueuedRequestsPane;
-import de.perdian.apps.downloader.fx.engine.DownloadEngineSettingsPane;
 import de.perdian.apps.downloader.fx.input.InputDragAndDropPane;
 import de.perdian.apps.downloader.fx.input.InputManualPane;
 import javafx.geometry.Insets;
@@ -47,9 +46,8 @@ public class DownloaderPane extends GridPane {
         inputDragAndDropTitledPane.setMaxHeight(Double.MAX_VALUE);
         GridPane.setVgrow(inputDragAndDropTitledPane, Priority.ALWAYS);
 
-        DownloadEngineSettingsPane downloadEngineSettingsPane = new DownloadEngineSettingsPane(engine);
-        downloadEngineSettingsPane.setPadding(new Insets(8, 8, 8, 8));
-        TitledPane settingsTitledPane = new TitledPane("Settings", downloadEngineSettingsPane);
+        DownloaderSettingsPane settingsPane = new DownloaderSettingsPane(configuration);
+        TitledPane settingsTitledPane = new TitledPane("Settings", settingsPane);
         settingsTitledPane.setCollapsible(false);
 
         DownloadEngineQueuedRequestsPane downloadEngineQueuedRequestsPane = new DownloadEngineQueuedRequestsPane(engine);
