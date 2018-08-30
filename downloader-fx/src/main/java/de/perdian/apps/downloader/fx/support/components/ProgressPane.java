@@ -25,6 +25,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
@@ -98,6 +99,7 @@ public class ProgressPane extends GridPane implements ProgressListener {
 
     public void setTitle(String title) {
         this.getTitleLabel().setText(title);
+        this.getTitleLabel().setTooltip(new Tooltip(title));
     }
     public String getTitle() {
         return this.getTitleLabel().getText();
@@ -112,6 +114,7 @@ public class ProgressPane extends GridPane implements ProgressListener {
 
     public void setSubtitle(String subtitle) {
         this.getSubtitleLabel().setText(subtitle);
+        this.getSubtitleLabel().setTooltip(new Tooltip(subtitle));
     }
     public String getSubtitle() {
         return this.getSubtitleLabel().getText();
