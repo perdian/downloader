@@ -8,6 +8,30 @@
     </parent>
     <artifactId>downloader-core</artifactId>
 
+    <url>https://github.com/perdian/downloader</url>
+
+    <scm>
+        <url>https://github.com/perdian/downloader</url>
+        <connection>scm:git:https://github.com/perdian/downloader.git</connection>
+        <developerConnection>scm:git:https://github.com/perdian/downloader.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>perdian</id>
+            <name>Christian Robert</name>
+            <email>dev@perdian.de</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <memoryfilesystem.version>0.5.4</memoryfilesystem.version>
         <okhttp.version>3.11.0</okhttp.version>
