@@ -33,7 +33,7 @@ public class IdentifierValidationSchedulingListener implements DownloadSchedulin
     }
 
     @Override
-    public void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+    public void onRequestSubmit(DownloadRequest request) throws DownloadRejectedException {
         if (request.getId() != null && this.hasIdentifier(request.getId())) {
             throw new DownloadRejectedException("Marker file existing for id: " + request.getId());
         }

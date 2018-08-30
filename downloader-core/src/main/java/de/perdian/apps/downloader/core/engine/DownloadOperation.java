@@ -9,11 +9,19 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import de.perdian.apps.downloader.core.support.ProgressListener;
 
+/**
+ * Data storage object that contains information about an active operation, which means a request
+ * that has been picked up by the engine for execution and for which the data from the remote
+ * resource is being retrieved and stored locally.
+ *
+ * @author Christian Robert
+ */
+
 public class DownloadOperation {
 
     private DownloadEngine owner = null;
     private DownloadRequestWrapper requestWrapper = null;
-    private DownloadStatus status = null;
+    private DownloadOperationStatus status = null;
     private Instant startTime = null;
     private Instant endTime = null;
     private Instant cancelTime = null;
@@ -30,11 +38,11 @@ public class DownloadOperation {
     }
 
     /**
-     * Cancels the current operation which means telling the operation to stop all actions and
-     * data transfers that are currently active. Please note that this doesn't mean that the
-     * transfer will actually stop immediately! If the processor thread itself doesn't provide an
-     * option to immediately stop the process the actual download might continue until the
-     * processor thread is able to stop.
+     * Cancels the current operation which means telling the operation to stop all actions and data
+     * transfers that are currently active. Please note that this doesn't mean that the transfer
+     * will actually stop immediately! If the processor thread itself doesn't provide an option to
+     * immediately stop the process the actual download might continue until the processor thread
+     * is able to stop.
      *
      * @param reason
      *     the reason why this job was cancelled
@@ -55,7 +63,7 @@ public class DownloadOperation {
     }
 
     /**
-     * Gets the request from which this {@link DownloadOperation} has been created
+     * Gets the request from which this operation has been created
      */
     public DownloadRequestWrapper getRequestWrapper() {
         return this.requestWrapper;
@@ -67,10 +75,10 @@ public class DownloadOperation {
     /**
      * Gets the status of the current download
      */
-    public DownloadStatus getStatus() {
+    public DownloadOperationStatus getStatus() {
         return this.status;
     }
-    void setStatus(DownloadStatus status) {
+    void setStatus(DownloadOperationStatus status) {
         this.status = status;
     }
 

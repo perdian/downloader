@@ -19,7 +19,7 @@ public interface DownloadSchedulingListener {
      *     further interaction within the {@link DownloadEngine} should be
      *     performed.
      */
-    default void onRequestSubmitted(DownloadRequest request) throws DownloadRejectedException {
+    default void onRequestSubmit(DownloadRequest request) throws DownloadRejectedException {
     }
 
     /**

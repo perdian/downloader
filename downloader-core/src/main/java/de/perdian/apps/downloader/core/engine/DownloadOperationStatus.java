@@ -1,13 +1,13 @@
 package de.perdian.apps.downloader.core.engine;
 
 /**
- * Enumration to describe the state of a {@link DownloadOperation} within a
+ * Enumeration to describe the state of a {@link DownloadOperation} within a
  * {@link DownloadEngine}.
  *
  * @author Christian Robert
  */
 
-public enum DownloadStatus {
+public enum DownloadOperationStatus {
 
     /**
      * Signalizes that a {@link DownloadEngine} has started to process the data

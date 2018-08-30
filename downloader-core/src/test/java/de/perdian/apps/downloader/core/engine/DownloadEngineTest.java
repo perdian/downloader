@@ -56,7 +56,7 @@ public class DownloadEngineTest {
 
         this.getEngine().waitUntilAllDownloadsComplete();
 
-        Mockito.verify(schedulingListener).onRequestSubmitted(Mockito.eq(request));
+        Mockito.verify(schedulingListener).onRequestSubmit(Mockito.eq(request));
         Mockito.verify(schedulingListener, Mockito.never()).onRequestScheduled(Mockito.any());
 
         ArgumentCaptor<DownloadOperation> operationStartedCaptor = ArgumentCaptor.forClass(DownloadOperation.class);
@@ -66,7 +66,7 @@ public class DownloadEngineTest {
         Assertions.assertNull(operationStartedCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationStartedCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationStartedCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationStartedCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationStartedCaptor.getValue().getStatus());
 
         ArgumentCaptor<DownloadTask> taskTransferStartingCaptor = ArgumentCaptor.forClass(DownloadTask.class);
         ArgumentCaptor<Path> pathTransferStartingCaptor = ArgumentCaptor.forClass(Path.class);
@@ -77,7 +77,7 @@ public class DownloadEngineTest {
         Assertions.assertNull(operationTransferStartingCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationTransferStartingCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationTransferStartingCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationTransferStartingCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationTransferStartingCaptor.getValue().getStatus());
         Assertions.assertEquals("targetFileName", pathTransferStartingCaptor.getValue().getFileName().toString());
         Assertions.assertEquals(task, taskTransferStartingCaptor.getValue());
 
@@ -90,7 +90,7 @@ public class DownloadEngineTest {
         Assertions.assertNull(operationTransferCompletedCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationTransferCompletedCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationTransferCompletedCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationTransferCompletedCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationTransferCompletedCaptor.getValue().getStatus());
         Assertions.assertEquals("targetFileName", pathTransferCompletedCaptor.getValue().getFileName().toString());
         Assertions.assertEquals(task, taskTransferCompletedCaptor.getValue());
         Assertions.assertArrayEquals("TEST".getBytes(), Files.readAllBytes(pathTransferCompletedCaptor.getValue()));
@@ -102,7 +102,7 @@ public class DownloadEngineTest {
         Assertions.assertNull(operationCompletedCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationCompletedCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationCompletedCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationCompletedCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationCompletedCaptor.getValue().getStatus());
 
         Mockito.verifyNoMoreInteractions(schedulingListener);
 
@@ -132,7 +132,7 @@ public class DownloadEngineTest {
 
         this.getEngine().waitUntilAllDownloadsComplete();
 
-        Mockito.verify(schedulingListener).onRequestSubmitted(Mockito.eq(request));
+        Mockito.verify(schedulingListener).onRequestSubmit(Mockito.eq(request));
         Mockito.verify(schedulingListener, Mockito.never()).onRequestScheduled(Mockito.any());
 
         ArgumentCaptor<DownloadOperation> operationStartedCaptor = ArgumentCaptor.forClass(DownloadOperation.class);
@@ -142,7 +142,7 @@ public class DownloadEngineTest {
         Assertions.assertEquals(error, operationStartedCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationStartedCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationStartedCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationStartedCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationStartedCaptor.getValue().getStatus());
 
         ArgumentCaptor<DownloadTask> taskTransferStartingCaptor = ArgumentCaptor.forClass(DownloadTask.class);
         ArgumentCaptor<Path> pathTransferStartingCaptor = ArgumentCaptor.forClass(Path.class);
@@ -153,7 +153,7 @@ public class DownloadEngineTest {
         Assertions.assertEquals(error, operationTransferStartingCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationTransferStartingCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationTransferStartingCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationTransferStartingCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationTransferStartingCaptor.getValue().getStatus());
         Assertions.assertEquals("targetFileName", pathTransferStartingCaptor.getValue().getFileName().toString());
         Assertions.assertEquals(task, taskTransferStartingCaptor.getValue());
 
@@ -166,7 +166,7 @@ public class DownloadEngineTest {
         Assertions.assertEquals(error, operationTransferCompletedCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationTransferCompletedCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationTransferCompletedCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationTransferCompletedCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationTransferCompletedCaptor.getValue().getStatus());
         Assertions.assertEquals("targetFileName", pathTransferCompletedCaptor.getValue().getFileName().toString());
         Assertions.assertEquals(task, taskTransferCompletedCaptor.getValue());
         Assertions.assertFalse(Files.exists(pathTransferCompletedCaptor.getValue()));
@@ -178,7 +178,7 @@ public class DownloadEngineTest {
         Assertions.assertEquals(error, operationCompletedCaptor.getValue().getError());
         Assertions.assertSame(this.getEngine(), operationCompletedCaptor.getValue().getOwner());
         Assertions.assertNotNull(operationCompletedCaptor.getValue().getStartTime());
-        Assertions.assertEquals(DownloadStatus.COMPLETED, operationCompletedCaptor.getValue().getStatus());
+        Assertions.assertEquals(DownloadOperationStatus.COMPLETED, operationCompletedCaptor.getValue().getStatus());
 
         Mockito.verifyNoMoreInteractions(schedulingListener);
 
@@ -188,7 +188,7 @@ public class DownloadEngineTest {
     public void submitWithListenerReject() throws Exception {
 
         DownloadSchedulingListener listener = Mockito.mock(DownloadSchedulingListener.class);
-        Mockito.doThrow(new DownloadRejectedException("X")).when(listener).onRequestSubmitted(Mockito.any());
+        Mockito.doThrow(new DownloadRejectedException("X")).when(listener).onRequestSubmit(Mockito.any());
         this.getEngine().addSchedulingListener(listener);
 
         DownloadRequest request = new DownloadRequest();
@@ -196,7 +196,7 @@ public class DownloadEngineTest {
         request.setTaskFactory(progressListener -> null);
 
         Assertions.assertNull(this.getEngine().submit(request));
-        Mockito.verify(listener).onRequestSubmitted(Mockito.eq(request));
+        Mockito.verify(listener).onRequestSubmit(Mockito.eq(request));
         Mockito.verifyNoMoreInteractions(listener);
 
     }

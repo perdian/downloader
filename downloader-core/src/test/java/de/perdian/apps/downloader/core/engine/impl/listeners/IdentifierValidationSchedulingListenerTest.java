@@ -35,19 +35,19 @@ public class IdentifierValidationSchedulingListenerTest {
     }
 
     @Test
-    public void onRequestSubmittedIdentifierNotExistingYet() throws Exception {
+    public void onRequestSubmitIdentifierNotExistingYet() throws Exception {
 
         DownloadRequest request = new DownloadRequest();
         request.setId("42");
 
         Path markerDirectory = this.getFileSystem().getPath("markerDirectory");
         IdentifierValidationSchedulingListener listener = new IdentifierValidationSchedulingListener(markerDirectory);
-        listener.onRequestSubmitted(request);
+        listener.onRequestSubmit(request);
 
     }
 
     @Test
-    public void onRequestSubmittedIdentifierExisting() throws Exception {
+    public void onRequestSubmitIdentifierExisting() throws Exception {
         Assertions.assertThrows(DownloadRejectedException.class, () -> {
 
             DownloadRequest request = new DownloadRequest();
@@ -59,7 +59,7 @@ public class IdentifierValidationSchedulingListenerTest {
             Files.createFile(markerFile);
 
             IdentifierValidationSchedulingListener listener = new IdentifierValidationSchedulingListener(markerDirectory);
-            listener.onRequestSubmitted(request);
+            listener.onRequestSubmit(request);
 
         });
     }

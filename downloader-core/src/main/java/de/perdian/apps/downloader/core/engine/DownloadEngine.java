@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,8 +27,8 @@ import de.perdian.apps.downloader.core.support.ProgressListener;
 
 /**
  * An engine represents the central manager object, into which new requests that are supposed to
- * download information from an external resource will be added and from which information about the
- * current state of the engine and it's operations can be requested.
+ * download information from an external resource can be added and from which information about the
+ * currently active operations and waiting requests can be requested.
  *
  * @author Christian Robert
  */
@@ -58,17 +59,17 @@ public class DownloadEngine {
     }
 
     /**
-     * Submits all new download into this engine.
+     * Submits a series of download requests into this engine.
      *
      * @param request
-     *     the requests containing all the information from which a download can
-     *     be constructed.
+     *     the requests containing all the information from which a download operation can be
+     *     constructed.
      * @return
      *     a list of {@link DownloadRequestWrapper} which the engine has accepted
      */
     public List<DownloadRequestWrapper> submitAll(Collection<DownloadRequest> requests) {
         List<DownloadRequestWrapper> acceptedRequestWrappers = new ArrayList<>();
-        requests.forEach(request -> {
+        Optional.ofNullable(requests).orElseGet(Collections::emptyList).forEach(request -> {
             DownloadRequestWrapper requestWrapper = this.submit(request);
             if (requestWrapper != null) {
                 acceptedRequestWrappers.add(requestWrapper);
@@ -78,17 +79,16 @@ public class DownloadEngine {
     }
 
     /**
-     * Submits a new download into this engine. It is up to the engine to decide
-     * whether or not the job can be started immediately or if it needs to be
-     * put in any kind of queue and await a free download slot.
+     * Submits a new download request into this engine. It is up to the engine to decide whether or
+     * not an operation for this request can be started immediately or if it needs to be put in any
+     * kind of queue and await a free download slot.
      *
      * @param request
-     *     the request containing all the information from which a download can
-     *     be constructed.
+     *     the request containing all the information from which a download can be constructed.
      * @return
-     *     a {@link DownloadRequestWrapper} if the engine has accepted the request and
-     *     scheduled it for execution or {@code null} if the engine instance
-     *     rejected the job and will not execute the transfer process.
+     *     a {@link DownloadRequestWrapper} if the engine has accepted the request and scheduled it
+     *     for execution or {@code null} if the engine instance rejected the operation and will not
+     *     execute the transfer process.
      */
     public DownloadRequestWrapper submit(DownloadRequest request) {
         if (request == null) {
@@ -98,14 +98,11 @@ public class DownloadEngine {
         } else if (request.getTaskFactory() == null) {
             throw new NullPointerException("Property 'taskFactory' of request must not be null!");
         } else {
-
-            // First we contact all the validators and make sure the new request
-            // might actually be processed
             if (!this.fireRequestSubmitted(request)) {
                 return null;
             } else {
 
-                log.info("Accepted request: {}", request);
+                log.info("Request accepted: {}", request);
                 DownloadRequestWrapper requestWrapper = new DownloadRequestWrapper();
                 requestWrapper.setOwner(this);
                 requestWrapper.setRequest(request);
@@ -126,7 +123,7 @@ public class DownloadEngine {
     private boolean fireRequestSubmitted(DownloadRequest request) {
         for (DownloadSchedulingListener listener : this.getSchedulingListeners()) {
             try {
-                listener.onRequestSubmitted(request);
+                listener.onRequestSubmit(request);
             } catch (DownloadRejectedException e) {
                 log.info("Request rejected by listener {}: (Request: {}, Message: {})", listener.getClass().getSimpleName(), request, e.getMessage());
                 return false;
@@ -138,11 +135,10 @@ public class DownloadEngine {
     synchronized boolean executeRequest(DownloadRequestWrapper requestWrapper, boolean ignoreSlots) {
         if (ignoreSlots || this.getProcessorCount() > this.getActiveOperations().size()) {
 
-            // Make sure we remove the job from the waiting list, so no matter
-            // from where we come from we always leave in a consistent state
+            // Make sure we remove the operation from the waiting list, so no matter from where we
+            // come we always leave the waiting queue in a consistent state
             this.getWaitingRequests().remove(requestWrapper);
 
-            // Now make sure we have the right status upon the job itself
             boolean requestAlreadyActive = this.getActiveOperations().stream()
                 .map(operation -> operation.getRequestWrapper())
                 .filter(requestWrapperFromOperation -> Objects.equals(requestWrapperFromOperation, requestWrapper))
@@ -153,14 +149,13 @@ public class DownloadEngine {
 
                 DownloadOperation operation = new DownloadOperation();
                 operation.setStartTime(this.getClock().instant());
-                operation.setStatus(DownloadStatus.ACTIVE);
+                operation.setStatus(DownloadOperationStatus.ACTIVE);
                 operation.setOwner(this);
                 operation.setRequestWrapper(requestWrapper);
                 requestWrapper.setOperation(operation);
-                log.info("Starting operation: {}", operation);
 
                 this.getActiveOperations().add(operation);
-                this.getExecutorService().submit(() -> this.executeOperation(operation));
+                this.getExecutorService().submit(() -> this.startOperation(operation));
 
             }
             return true;
@@ -170,43 +165,44 @@ public class DownloadEngine {
         }
     }
 
-    private void executeOperation(DownloadOperation operation) {
+    private void startOperation(DownloadOperation operation) {
         try {
-            log.debug("Running operation: {}", operation);
+
+            log.debug("Starting operation: {}", operation);
             this.getSchedulingListeners().forEach(l -> l.onOperationStarting(operation));
-            this.executeOperationTransfer(operation);
+            this.startOperationTransfer(operation);
+
             operation.setEndTime(this.getClock().instant());
-            operation.setStatus(DownloadStatus.COMPLETED);
+            operation.setStatus(DownloadOperationStatus.COMPLETED);
             log.info("Operation completed: {} in {}", operation, Duration.between(operation.getStartTime(), operation.getEndTime()));
+
         } catch (Exception e) {
+
             operation.setEndTime(this.getClock().instant());
             operation.setError(e);
-            operation.setStatus(DownloadStatus.COMPLETED);
+            operation.setStatus(DownloadOperationStatus.COMPLETED);
             log.info("Exception occured during operation execution: " + operation, e);
+
         } finally {
             try {
                 synchronized (this) {
 
-                    // Make sure the job is removed from the list of currently
-                    // active jobs
+                    // Make sure the operation is removed from the list of currently active operations
                     this.getActiveOperations().remove(operation);
 
-                    // After the current processor is finished we want to make
-                    // sure that the next item in the queue get's picked up
+                    // After the current processor is finished we want to make sure that the next
+                    // item in the queue get's picked up
                     this.checkWaitingRequests();
 
                 }
             } finally {
-
-                // Update the job itself
                 this.getSchedulingListeners().forEach(l -> l.onOperationCompleted(operation));
-
             }
         }
 
     }
 
-    private void executeOperationTransfer(DownloadOperation operation) throws Exception {
+    private void startOperationTransfer(DownloadOperation operation) throws Exception {
 
         ProgressListener progressListener = ProgressListener.compose(operation.getProgressListeners());
         DownloadRequest request = operation.getRequestWrapper().getRequest();
@@ -217,43 +213,46 @@ public class DownloadEngine {
         }
         this.getSchedulingListeners().forEach(l -> l.onOperationTransferStarting(task, targetFilePath, operation));
 
-        if (DownloadStatus.ACTIVE.equals(operation.getStatus())) {
+        if (DownloadOperationStatus.ACTIVE.equals(operation.getStatus())) {
 
             long inStreamSize = task.getContentFactory().size();
-            try (InputStream inStream = task.getContentFactory().openStream()) {
-                try (OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
+            try {
+                try (InputStream inStream = task.getContentFactory().openStream()) {
+                    try (OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
 
-                    long notificationBlockSize = Math.max(this.getBufferSize(), this.getNotificationSize());
-                    long nextNotification = notificationBlockSize;
-                    long totalBytesWritten = 0;
-                    progressListener.onProgress(null, 0L, inStreamSize);
+                        long notificationBlockSize = Math.max(this.getBufferSize(), this.getNotificationSize());
+                        long nextNotification = notificationBlockSize;
+                        long totalBytesWritten = 0;
+                        progressListener.onProgress(null, 0L, inStreamSize);
 
-                    byte[] buffer = new byte[this.getBufferSize()];
-                    for (int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadStatus.ACTIVE.equals(operation.getStatus()); bufferSize = inStream.read(buffer)) {
-                        outStream.write(buffer, 0, bufferSize);
-                        totalBytesWritten += bufferSize;
-                        if (totalBytesWritten > nextNotification) {
-                            nextNotification += notificationBlockSize;
-                            progressListener.onProgress(null, totalBytesWritten, inStreamSize);
+                        byte[] buffer = new byte[this.getBufferSize()];
+                        for (int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadOperationStatus.ACTIVE.equals(operation.getStatus()); bufferSize = inStream.read(buffer)) {
+                            outStream.write(buffer, 0, bufferSize);
+                            totalBytesWritten += bufferSize;
+                            if (totalBytesWritten > nextNotification) {
+                                nextNotification += notificationBlockSize;
+                                progressListener.onProgress(null, totalBytesWritten, inStreamSize);
+                            }
                         }
-                    }
-                    progressListener.onProgress(null, totalBytesWritten, inStreamSize);
-                    outStream.flush();
+                        progressListener.onProgress(null, totalBytesWritten, inStreamSize);
+                        outStream.flush();
 
+                    }
+                } catch (Exception e) {
+                    operation.setError(e);
+                    log.warn("Error occured during file transfer [" + operation + "]", e);
+                    try {
+                        Files.deleteIfExists(targetFilePath);
+                    } catch (Exception e2) {
+                        log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
+                    }
+                    throw e;
                 }
-            } catch (final Exception e) {
-                log.warn("Error occured during file transfer [" + operation + "]", e);
-                try {
-                    Files.deleteIfExists(targetFilePath);
-                } catch (Exception e2) {
-                    log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
-                }
-                throw e;
             } finally {
                 this.getSchedulingListeners().forEach(l -> l.onOperationTransferCompleted(task, targetFilePath, operation));
             }
 
-            if (!DownloadStatus.ACTIVE.equals(operation.getStatus())) {
+            if (!DownloadOperationStatus.ACTIVE.equals(operation.getStatus())) {
                 try {
                     Files.deleteIfExists(targetFilePath);
                 } catch (Exception e) {
@@ -280,22 +279,22 @@ public class DownloadEngine {
     }
 
     synchronized boolean cancelOperation(DownloadOperation operation, String reason) {
-        if (DownloadStatus.CANCELLED.equals(operation.getStatus())) {
+        if (DownloadOperationStatus.CANCELLED.equals(operation.getStatus())) {
 
-            // The download is already cancelled, so there must be someone else
-            // calling the cancel method twice.
+            // The operation is already cancelled, so this call must come from someone else calling
+            // the cancel method twice. Nice try, but there is nothing that we should do now.
             return true;
 
         } else if (!this.getActiveOperations().contains(operation)) {
 
-            // The job could not be found in the list of active jobs, which
-            // means we have no way of handling him at all - so we just exit
+            // The operation could not be found in the list of active operations, which means we
+            // have no way of handling it at all - so let's just exit.
             return false;
 
         } else {
 
             log.debug("Cancelling operation {} with reason: {}", operation, reason);
-            operation.setStatus(DownloadStatus.CANCELLED);
+            operation.setStatus(DownloadOperationStatus.CANCELLED);
             operation.setCancelTime(this.getClock().instant());
             operation.setCancelReason(reason);
             this.getSchedulingListeners().forEach(l -> l.onOperationCancelled(operation));
@@ -317,8 +316,8 @@ public class DownloadEngine {
     }
 
     /**
-     * Wait until all jobs currently executing and waiting inside this executor
-     * have been completed
+     * Wait until all operations currently executing and waiting inside this engine have been
+     * completed
      */
     public void waitUntilAllDownloadsComplete() {
         synchronized (this) {
@@ -327,7 +326,7 @@ public class DownloadEngine {
             }
         }
         try {
-            final CountDownLatch latch = new CountDownLatch(1);
+            CountDownLatch latch = new CountDownLatch(1);
             this.addSchedulingListener(new DownloadSchedulingListener() {
                 @Override public void onOperationCompleted(DownloadOperation operation) {
                     synchronized (DownloadEngine.this) {
@@ -399,7 +398,7 @@ public class DownloadEngine {
     }
 
     /**
-     * Removes all currently queued requests that have not been picked up yet
+     * Remove all currently queued requests that have not been picked up yet
      *
      * @return
      *     the requests that were cleared from this engine at the time this method was called.
