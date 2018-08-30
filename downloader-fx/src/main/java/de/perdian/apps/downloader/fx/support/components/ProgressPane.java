@@ -85,7 +85,7 @@ public class ProgressPane extends GridPane implements ProgressListener {
 
     private void onProgressForMessage(String message, Long bytesWritten, Long bytesTotal) {
         if (!StringUtils.isEmpty(message)) {
-            this.getMessageLabel().setText(message);
+            Platform.runLater(() -> this.getMessageLabel().setText(message));
         } else if (bytesWritten != null && bytesTotal != null && bytesTotal.longValue() > 0) {
             NumberFormat fileSizeFormat = new DecimalFormat("#,##0");
             StringBuilder progressMessage = new StringBuilder();
