@@ -18,7 +18,6 @@ package de.perdian.apps.downloader.core.support.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -28,7 +27,6 @@ import de.perdian.apps.downloader.core.support.StreamFactory;
 public class URLStreamFactory implements StreamFactory {
 
     private URL url = null;
-    private URLConnection urlConnection = null;
 
     public URLStreamFactory(URL url) {
         this.setUrl(url);
@@ -41,21 +39,14 @@ public class URLStreamFactory implements StreamFactory {
         return toStringBuilder.toString();
     }
 
-    private synchronized URLConnection ensureUrlConnection() throws IOException {
-        if (this.urlConnection == null) {
-            this.urlConnection = this.getUrl().openConnection();
-        }
-        return this.urlConnection;
-    }
-
     @Override
     public InputStream openStream() throws IOException {
-        return this.ensureUrlConnection().getInputStream();
+        return this.getUrl().openStream();
     }
 
     @Override
     public long size() throws IOException {
-        return this.ensureUrlConnection().getContentLength();
+        return this.getUrl().openConnection().getContentLengthLong();
     }
 
     public URL getUrl() {

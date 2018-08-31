@@ -30,7 +30,6 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
 
     private OkHttpClient httpClient = null;
     private String url = null;
-    private Response response = null;
 
     public OkHttpClientRequestStreamFactory(String url) {
         this(url, new OkHttpClient.Builder().build());
@@ -48,22 +47,16 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
         return toStringBuilder.toString();
     }
 
-    private Response ensureResponse() throws IOException {
-        if (this.response == null) {
-            Request request = new Request.Builder().url(this.getUrl()).build();
-            this.response = this.getHttpClient().newCall(request).execute();
-        }
-        return this.response;
-    }
-
     @Override
     public InputStream openStream() throws IOException {
-        return this.ensureResponse().body().byteStream();
+        return this.getHttpClient().newCall(new Request.Builder().url(this.getUrl()).build()).execute().body().byteStream();
     }
 
     @Override
     public long size() throws IOException {
-        return this.ensureResponse().body().contentLength();
+        try (Response response = this.getHttpClient().newCall(new Request.Builder().url(this.getUrl()).build()).execute()) {
+            return response.body().contentLength();
+        }
     }
 
     public OkHttpClient getHttpClient() {
@@ -78,13 +71,6 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
     }
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public Response getResponse() {
-        return this.response;
-    }
-    public void setResponse(Response response) {
-        this.response = response;
     }
 
 }
