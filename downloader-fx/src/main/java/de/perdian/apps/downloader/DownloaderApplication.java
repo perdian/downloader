@@ -16,14 +16,17 @@
 package de.perdian.apps.downloader;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
+import de.perdian.apps.downloader.core.engine.DownloadRequest;
 import de.perdian.apps.downloader.core.engine.DownloadRequestFactory;
-import de.perdian.apps.downloader.fx.engine.DownloadEngineSettingsPane;
+import de.perdian.apps.downloader.core.engine.DownloadTask;
+import de.perdian.apps.downloader.fx.EngineSettingsPane;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -49,6 +52,7 @@ public class DownloaderApplication extends Application {
         DownloaderUrlConsumer urlConsumer = new DownloaderUrlConsumer();
         urlConsumer.setEngine(engine);
         urlConsumer.setRequestFactories(configuration.getRequestFactories());
+        urlConsumer.setExceptionConsumer(exception -> DownloaderUrlConsumerErrorPane.showAsPopup(exception, primaryStage));
 
         log.info("Creating JavaFX UI");
         DownloaderPane downloaderPane = new DownloaderPane(engine, configuration, urlConsumer);
@@ -66,6 +70,16 @@ public class DownloaderApplication extends Application {
 
         log.info("Application start completed");
 
+for(int i=0; i < 10; i++) {
+    DownloadTask task = new DownloadTask();
+    task.setTargetFileName("Target file name");
+    task.setContentFactory(() -> { throw new IOException("FOO!"); });
+    DownloadRequest request = new DownloadRequest();
+    request.setTitle("Title " + i);
+    request.setTaskFactory(progressListener -> task);
+    engine.submit(request);
+}
+
     }
 
     protected DownloadEngine createEngine() {
@@ -75,7 +89,7 @@ public class DownloaderApplication extends Application {
 
     protected DownloaderConfiguration createConfiguration(DownloadEngine engine) {
         DownloaderConfiguration configuration = new DownloaderConfiguration();
-        configuration.getSettingsPanes().put("Engine", new DownloadEngineSettingsPane(engine));
+        configuration.getSettingsPanes().put("Engine", new EngineSettingsPane(engine));
         configuration.getRequestFactories().addAll(DownloadRequestFactory.createDefaultFactories());
         return configuration;
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.apps.downloader.fx.engine;
+package de.perdian.apps.downloader.fx;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -30,9 +30,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 
-public class DownloadEngineSettingsPane extends VBox {
+public class EngineSettingsPane extends VBox {
 
-    public DownloadEngineSettingsPane(DownloadEngine engine) {
+    public EngineSettingsPane(DownloadEngine engine) {
 
         int maxProcessorValue = 64;
         Button minusButton = new Button("–");
@@ -67,7 +67,7 @@ public class DownloadEngineSettingsPane extends VBox {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setInitialDirectory(engine.getTargetDirectory().toFile());
             directoryChooser.setTitle("Select target directory");
-            File targetDirectory = directoryChooser.showDialog(DownloadEngineSettingsPane.this.getScene().getWindow());
+            File targetDirectory = directoryChooser.showDialog(EngineSettingsPane.this.getScene().getWindow());
             if (targetDirectory != null && targetDirectory.exists()) {
                 engine.setTargetDirectory(targetDirectory.toPath());
             }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.apps.downloader.fx.engine;
+package de.perdian.apps.downloader.fx;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -38,18 +38,18 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-public class DownloadEngineQueuedRequestsPane extends BorderPane implements DownloadSchedulingListener {
+public class QueuedRequestsPane extends BorderPane implements DownloadSchedulingListener {
 
     private Map<DownloadRequestWrapper, DownloadEngineRequestWrapperPane> requestWrapperPanesByRequestWrapper = null;
     private VBox requestWrapperPanesBox = null;
 
-    public DownloadEngineQueuedRequestsPane(DownloadEngine engine) {
+    public QueuedRequestsPane(DownloadEngine engine) {
 
         VBox requestWrapperPanesBox = new VBox(4);
         requestWrapperPanesBox.setPadding(new Insets(4, 0, 4, 0));
 
         ScrollPane scrollPane = new ScrollPane(requestWrapperPanesBox);
-        scrollPane.setBorder(null);
+        scrollPane.setStyle("-fx-background-color: transparent;");
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
@@ -65,7 +65,7 @@ public class DownloadEngineQueuedRequestsPane extends BorderPane implements Down
     @Override
     public void onRequestScheduled(DownloadRequestWrapper requestWrapper) {
         synchronized (requestWrapper) {
-            DownloadEngineQueuedRequestsPane.DownloadEngineRequestWrapperPane requestWrapperPane = new DownloadEngineQueuedRequestsPane.DownloadEngineRequestWrapperPane(requestWrapper);
+            QueuedRequestsPane.DownloadEngineRequestWrapperPane requestWrapperPane = new QueuedRequestsPane.DownloadEngineRequestWrapperPane(requestWrapper);
             this.getRequestWrapperPanesByRequestWrapper().put(requestWrapper, requestWrapperPane);
             Platform.runLater(() -> this.getRequestWrapperPanesBox().getChildren().add(requestWrapperPane));
         }
@@ -74,7 +74,7 @@ public class DownloadEngineQueuedRequestsPane extends BorderPane implements Down
     @Override
     public void onRequestCancelled(DownloadRequestWrapper requestWrapper) {
         synchronized (requestWrapper) {
-            DownloadEngineQueuedRequestsPane.DownloadEngineRequestWrapperPane requestWrapperPane = this.getRequestWrapperPanesByRequestWrapper().get(requestWrapper);
+            QueuedRequestsPane.DownloadEngineRequestWrapperPane requestWrapperPane = this.getRequestWrapperPanesByRequestWrapper().get(requestWrapper);
             if (requestWrapperPane != null) {
                 Platform.runLater(() -> this.getRequestWrapperPanesBox().getChildren().remove(requestWrapperPane));
             }
@@ -84,7 +84,7 @@ public class DownloadEngineQueuedRequestsPane extends BorderPane implements Down
     @Override
     public void onOperationStarting(DownloadOperation operation) {
         synchronized (operation.getRequestWrapper()) {
-            DownloadEngineQueuedRequestsPane.DownloadEngineRequestWrapperPane requestWrapperPane = this.getRequestWrapperPanesByRequestWrapper().get(operation.getRequestWrapper());
+            QueuedRequestsPane.DownloadEngineRequestWrapperPane requestWrapperPane = this.getRequestWrapperPanesByRequestWrapper().get(operation.getRequestWrapper());
             if (requestWrapperPane != null) {
                 Platform.runLater(() -> this.getRequestWrapperPanesBox().getChildren().remove(requestWrapperPane));
             }

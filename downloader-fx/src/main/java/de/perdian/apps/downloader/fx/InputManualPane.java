@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.apps.downloader.fx.input;
+package de.perdian.apps.downloader.fx;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.apps.downloader.fx.engine;
+package de.perdian.apps.downloader.fx;
 
 import java.nio.file.Path;
 import java.util.IdentityHashMap;
@@ -38,18 +38,18 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-public class DownloadEngineActiveOperationsPane extends BorderPane implements DownloadSchedulingListener {
+public class ActiveOperationsPane extends BorderPane implements DownloadSchedulingListener {
 
     private Map<DownloadOperation, DownloadOperationPane> operationPanesByOperation = null;
     private VBox operationPanesBox = null;
 
-    public DownloadEngineActiveOperationsPane(DownloadEngine engine) {
+    public ActiveOperationsPane(DownloadEngine engine) {
 
         VBox operationPanesBox = new VBox(4);
         operationPanesBox.setPadding(new Insets(4, 0, 4, 0));
 
         ScrollPane scrollPane = new ScrollPane(operationPanesBox);
-        scrollPane.setBorder(null);
+        scrollPane.setStyle("-fx-background-color: transparent;");
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
@@ -65,7 +65,7 @@ public class DownloadEngineActiveOperationsPane extends BorderPane implements Do
     @Override
     public void onOperationStarting(DownloadOperation operation) {
         synchronized (operation) {
-            DownloadEngineActiveOperationsPane.DownloadOperationPane operationPane = new DownloadEngineActiveOperationsPane.DownloadOperationPane(operation);
+            ActiveOperationsPane.DownloadOperationPane operationPane = new ActiveOperationsPane.DownloadOperationPane(operation);
             this.getOperationPanesByOperation().put(operation, operationPane);
             Platform.runLater(() -> this.getOperationPanesBox().getChildren().add(operationPane));
         }
@@ -74,7 +74,7 @@ public class DownloadEngineActiveOperationsPane extends BorderPane implements Do
     @Override
     public void onOperationCompleted(DownloadOperation operation) {
         synchronized (operation) {
-            DownloadEngineActiveOperationsPane.DownloadOperationPane operationPane = this.getOperationPanesByOperation().remove(operation);
+            ActiveOperationsPane.DownloadOperationPane operationPane = this.getOperationPanesByOperation().remove(operation);
             if (operationPane != null) {
                 Platform.runLater(() -> this.getOperationPanesBox().getChildren().remove(operationPane));
             }
@@ -83,7 +83,7 @@ public class DownloadEngineActiveOperationsPane extends BorderPane implements Do
 
     @Override
     public void onOperationTransferStarting(DownloadTask task, Path targetFile, DownloadOperation operation) {
-        DownloadEngineActiveOperationsPane.DownloadOperationPane operationPane = this.getOperationPanesByOperation().get(operation);
+        ActiveOperationsPane.DownloadOperationPane operationPane = this.getOperationPanesByOperation().get(operation);
         if (operationPane != null) {
             Platform.runLater(() -> {
                 operationPane.getProgressPane().setSubtitle("File: " + targetFile.getFileName().toString());
