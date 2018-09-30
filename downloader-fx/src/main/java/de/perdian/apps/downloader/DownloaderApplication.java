@@ -46,13 +46,8 @@ public class DownloaderApplication extends Application {
         log.info("Creating DownloaderConfiguration");
         DownloaderConfiguration configuration = this.createConfiguration(engine);
 
-        DownloaderUrlConsumer urlConsumer = new DownloaderUrlConsumer();
-        urlConsumer.setEngine(engine);
-        urlConsumer.setRequestFactories(configuration.getRequestFactories());
-        urlConsumer.setExceptionConsumer(exception -> DownloaderUrlConsumerErrorPane.showAsPopup(exception, primaryStage));
-
         log.info("Creating JavaFX UI");
-        DownloaderPane downloaderPane = new DownloaderPane(engine, configuration, urlConsumer);
+        DownloaderPane downloaderPane = new DownloaderPane(engine, configuration, new DownloaderUrlConsumer(engine, configuration.getRequestFactories()));
 
         log.info("Opening JavaFX stage");
         primaryStage.getIcons().add(new Image(this.getClass().getResourceAsStream("/icons/96/download.png")));

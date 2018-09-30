@@ -15,8 +15,6 @@
  */
 package de.perdian.apps.downloader.fx;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -33,10 +31,10 @@ public class InputDragAndDropPane extends BorderPane {
 
     private static final Logger log = LoggerFactory.getLogger(InputDragAndDropPane.class);
 
-    private Consumer<URL> urlConsumer = null;
+    private Consumer<String> urlConsumer = null;
     private Label statusLabel = null;
 
-    public InputDragAndDropPane(Consumer<URL> urlConsumer) {
+    public InputDragAndDropPane(Consumer<String> urlConsumer) {
 
         Label infoLabel = new Label("Drag a URL into this area to initiate the download process");
         infoLabel.setWrapText(true);
@@ -60,7 +58,7 @@ public class InputDragAndDropPane extends BorderPane {
     private void handleDragExited(DragEvent dragEvent) {
         if (dragEvent.getAcceptingObject() != null) {
             Dragboard dragboard = dragEvent.getDragboard();
-            Object dragboardContent = dragboard.getContent(DataFormat.URL);
+            Object dragboardContent = dragboard.getContent(DataFormat.PLAIN_TEXT);
             if (dragboardContent != null) {
                 this.handleUrlString(dragboardContent.toString());
             }
@@ -68,20 +66,15 @@ public class InputDragAndDropPane extends BorderPane {
     }
 
     private void handleUrlString(String urlString) {
-        try {
-            URL url = new URL(urlString);
-            this.getStatusLabel().setText("Detected URL: " + url);
-            log.info("Handling Drag&Drop for URL: " + url);
-            this.getUrlConsumer().accept(url);
-        } catch (MalformedURLException e) {
-            this.getStatusLabel().setText("Cannot parse value into URL: " + urlString);
-        }
+        this.getStatusLabel().setText("Detected Drag&Drop input: " + urlString);
+        log.info("Handling Drag&Drop for input: " + urlString);
+        this.getUrlConsumer().accept(urlString);
     }
 
-    private Consumer<URL> getUrlConsumer() {
+    private Consumer<String> getUrlConsumer() {
         return this.urlConsumer;
     }
-    private void setUrlConsumer(Consumer<URL> urlConsumer) {
+    private void setUrlConsumer(Consumer<String> urlConsumer) {
         this.urlConsumer = urlConsumer;
     }
 

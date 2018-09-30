@@ -15,7 +15,6 @@
  */
 package de.perdian.apps.downloader;
 
-import java.net.URL;
 import java.util.function.Consumer;
 
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
@@ -31,7 +30,7 @@ import javafx.scene.layout.Priority;
 
 public class DownloaderPane extends GridPane {
 
-    public DownloaderPane(DownloadEngine engine, DownloaderConfiguration configuration, Consumer<URL> urlConsumer) {
+    public DownloaderPane(DownloadEngine engine, DownloaderConfiguration configuration, Consumer<String> urlConsumer) {
 
         InputManualPane inputManualPane = new InputManualPane(urlConsumer);
         inputManualPane.setPadding(new Insets(8, 8, 8, 8));

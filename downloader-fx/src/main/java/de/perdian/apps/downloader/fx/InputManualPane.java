@@ -15,12 +15,7 @@
  */
 package de.perdian.apps.downloader.fx;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.function.Consumer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -32,14 +27,11 @@ import javafx.scene.layout.Priority;
 
 public class InputManualPane extends GridPane {
 
-    private static final Logger log = LoggerFactory.getLogger(InputManualPane.class);
+    private Consumer<String> urlConsumer = null;
 
-    private Consumer<URL> urlConsumer = null;
-
-    public InputManualPane(Consumer<URL> urlConsumer) {
+    public InputManualPane(Consumer<String> urlConsumer) {
 
         Button urlParseButton = new Button("Use URL");
-        urlParseButton.setDisable(true);
         TextField urlField = new TextField();
         urlField.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
@@ -47,22 +39,7 @@ public class InputManualPane extends GridPane {
             }
         });
         urlParseButton.fire();
-        urlField.textProperty().addListener((o, oldValue, newValue) -> {
-            try {
-                URL parsedUrl = new URL(newValue);
-                log.trace("Parsed URL: {}", parsedUrl);
-                urlParseButton.setDisable(false);
-            } catch (MalformedURLException e) {
-                urlParseButton.setDisable(true);
-            }
-        });
-        urlParseButton.setOnAction(event -> {
-            try {
-                this.getUrlConsumer().accept(new URL(urlField.getText()));
-            } catch (MalformedURLException e) {
-                log.trace("Ignoreing invalid URL: " + urlField.getText());
-            }
-        });
+        urlParseButton.setOnAction(event -> this.getUrlConsumer().accept(urlField.getText()));
         GridPane.setHgrow(urlField, Priority.ALWAYS);
 
         this.add(new Label("Manually enter URL"), 0, 0, 2, 1);
@@ -75,10 +52,10 @@ public class InputManualPane extends GridPane {
 
     }
 
-    private Consumer<URL> getUrlConsumer() {
+    private Consumer<String> getUrlConsumer() {
         return this.urlConsumer;
     }
-    private void setUrlConsumer(Consumer<URL> urlConsumer) {
+    private void setUrlConsumer(Consumer<String> urlConsumer) {
         this.urlConsumer = urlConsumer;
     }
 
