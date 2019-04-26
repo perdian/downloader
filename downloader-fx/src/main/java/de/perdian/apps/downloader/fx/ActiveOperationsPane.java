@@ -18,6 +18,7 @@ package de.perdian.apps.downloader.fx;
 import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
 import de.perdian.apps.downloader.core.engine.DownloadOperation;
@@ -87,7 +88,7 @@ public class ActiveOperationsPane extends BorderPane implements DownloadScheduli
         if (operationPane != null) {
             Platform.runLater(() -> {
                 operationPane.getProgressPane().setSubtitle("File: " + targetFile.getFileName().toString());
-                operationPane.getImagePane().setStreamFactory(operation.getRequestWrapper().getRequest().getPreviewImageFactory());
+                operationPane.getImagePane().setStreamFactory(Optional.ofNullable(task.getPreviewImageFactory()).orElse(operation.getRequestWrapper().getRequest().getPreviewImageFactory()));
             });
         }
     }

@@ -13,54 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.perdian.apps.downloader.core.engine.impl.tasks;
+package de.perdian.apps.downloader.core.engine.impl.dataextractors;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.function.Supplier;
 
+import de.perdian.apps.downloader.core.engine.DownloadDataExtractor;
 import de.perdian.apps.downloader.core.engine.DownloadOperationStatus;
-import de.perdian.apps.downloader.core.engine.DownloadTask;
 import de.perdian.apps.downloader.core.support.ProgressListener;
 import de.perdian.apps.downloader.core.support.StreamFactory;
 
-public class StreamFactoryTask implements DownloadTask {
+public class StreamFactoryDataExtractor implements DownloadDataExtractor {
 
     private StreamFactory streamFactory = null;
     private int bufferSize = 1024 * 8; // 8 KiB
     private int notificationSize = 1024 * 64; // 64 KiB
 
-    public StreamFactoryTask(StreamFactory streamFactory) {
+    public StreamFactoryDataExtractor(StreamFactory streamFactory) {
         this.setStreamFactory(streamFactory);
     }
 
     @Override
-    public void executeDownload(Path targetPath, ProgressListener progressListener, Supplier<DownloadOperationStatus> statusSupplier) throws Exception {
+    public void extractData(OutputStream targetStream, ProgressListener progressListener, Supplier<DownloadOperationStatus> statusSupplier) throws Exception {
         long inStreamSize = this.getStreamFactory().size();
         try (InputStream inStream = this.getStreamFactory().openStream()) {
-            try (OutputStream outStream = Files.newOutputStream(targetPath, Files.exists(targetPath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
 
-                long notificationBlockSize = Math.max(this.getBufferSize(), this.getNotificationSize());
-                long nextNotification = notificationBlockSize;
-                long totalBytesWritten = 0;
-                progressListener.onProgress(null, 0L, inStreamSize);
+            long notificationBlockSize = Math.max(this.getBufferSize(), this.getNotificationSize());
+            long nextNotification = notificationBlockSize;
+            long totalBytesWritten = 0;
+            progressListener.onProgress(null, 0L, inStreamSize);
 
-                byte[] buffer = new byte[this.getBufferSize()];
-                for (int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadOperationStatus.ACTIVE.equals(statusSupplier.get()); bufferSize = inStream.read(buffer)) {
-                    outStream.write(buffer, 0, bufferSize);
-                    totalBytesWritten += bufferSize;
-                    if (totalBytesWritten > nextNotification) {
-                        nextNotification += notificationBlockSize;
-                        progressListener.onProgress(null, totalBytesWritten, inStreamSize);
-                    }
+            byte[] buffer = new byte[this.getBufferSize()];
+            for (int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadOperationStatus.ACTIVE.equals(statusSupplier.get()); bufferSize = inStream.read(buffer)) {
+                targetStream.write(buffer, 0, bufferSize);
+                totalBytesWritten += bufferSize;
+                if (totalBytesWritten > nextNotification) {
+                    nextNotification += notificationBlockSize;
+                    progressListener.onProgress(null, totalBytesWritten, inStreamSize);
                 }
-                progressListener.onProgress(null, totalBytesWritten, inStreamSize);
-                outStream.flush();
-
             }
+            progressListener.onProgress(null, totalBytesWritten, inStreamSize);
+
         }
     }
 

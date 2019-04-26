@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
 import de.perdian.apps.downloader.core.engine.DownloadRequest;
 import de.perdian.apps.downloader.core.engine.DownloadRequestFactory;
-import de.perdian.apps.downloader.core.engine.impl.tasks.StreamFactoryTask;
+import de.perdian.apps.downloader.core.engine.DownloadTask;
+import de.perdian.apps.downloader.core.engine.impl.dataextractors.StreamFactoryDataExtractor;
 import de.perdian.apps.downloader.core.support.impl.URLStreamFactory;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -82,9 +83,8 @@ class DownloaderUrlConsumer implements Consumer<String> {
                 if (useOriginalUrlButtonType.equals(requestFactoryNotFoundButtonType)) {
                     DownloadRequest downloadRequest = new DownloadRequest();
                     downloadRequest.setId(UUID.randomUUID().toString());
-                    downloadRequest.setTargetFileNameSupplier(() -> inputUrl.getFile());
                     downloadRequest.setTitle(inputUrl.toString());
-                    downloadRequest.setTaskSupplier(() -> new StreamFactoryTask(new URLStreamFactory(inputUrl)));
+                    downloadRequest.setTaskFactory(ProgressListener -> new DownloadTask(inputUrl.getFile(), new StreamFactoryDataExtractor(new URLStreamFactory(inputUrl))));
                     this.getEngine().submit(downloadRequest);
                 }
 

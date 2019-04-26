@@ -15,13 +15,45 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
-import java.nio.file.Path;
-import java.util.function.Supplier;
+import java.util.Objects;
 
-import de.perdian.apps.downloader.core.support.ProgressListener;
+import de.perdian.apps.downloader.core.support.StreamFactory;
 
-public interface DownloadTask {
+public class DownloadTask {
 
-    void executeDownload(Path targetPath, ProgressListener progressListener, Supplier<DownloadOperationStatus> statusSupplier) throws Exception;
+    private String targetFileName = null;
+    private DownloadDataExtractor dataExtractor = null;
+    private StreamFactory previewImageFactory = null;
+
+    public DownloadTask(String targetFileName, DownloadDataExtractor dataExtractor) {
+        this(targetFileName, dataExtractor, null);
+    }
+
+    public DownloadTask(String targetFileName, DownloadDataExtractor dataExtractor, StreamFactory previewImageFactory) {
+        this.setTargetFileName(targetFileName);
+        this.setDataExtractor(dataExtractor);
+        this.setPreviewImageFactory(previewImageFactory);
+    }
+
+    public String getTargetFileName() {
+        return this.targetFileName;
+    }
+    public void setTargetFileName(String targetFileName) {
+        this.targetFileName = Objects.requireNonNull(targetFileName, "Parameter 'targetFileName' must not be null");
+    }
+
+    public DownloadDataExtractor getDataExtractor() {
+        return this.dataExtractor;
+    }
+    public void setDataExtractor(DownloadDataExtractor dataExtractor) {
+        this.dataExtractor = Objects.requireNonNull(dataExtractor, "Parameter 'dataExtractor' must not be null");
+    }
+
+    public StreamFactory getPreviewImageFactory() {
+        return this.previewImageFactory;
+    }
+    public void setPreviewImageFactory(StreamFactory previewImageFactory) {
+        this.previewImageFactory = previewImageFactory;
+    }
 
 }

@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder;
 
-import de.perdian.apps.downloader.core.engine.impl.tasks.StreamFactoryTask;
+import de.perdian.apps.downloader.core.engine.impl.dataextractors.StreamFactoryDataExtractor;
 import de.perdian.apps.downloader.core.support.StreamFactory;
 import de.perdian.apps.downloader.core.support.impl.ByteArrayStreamFactory;
 
@@ -39,12 +39,11 @@ public class DownloadEngineTest {
     @Test
     public void completeCycleOkay() throws Exception {
 
-        DownloadTask task = new StreamFactoryTask(new ByteArrayStreamFactory("TEST".getBytes()));
+        DownloadTask task = new DownloadTask("targetFileName", new StreamFactoryDataExtractor(new ByteArrayStreamFactory("TEST".getBytes())));
         DownloadRequest request = new DownloadRequest();
         request.setId("42");
         request.setTitle("Foo");
-        request.setTargetFileNameSupplier(() -> "targetFileName");
-        request.setTaskSupplier(() -> task);
+        request.setTaskFactory(progressListener -> task);
 
         DownloadSchedulingListener schedulingListener = Mockito.mock(DownloadSchedulingListener.class);
         this.getEngine().addSchedulingListener(schedulingListener);
@@ -114,12 +113,11 @@ public class DownloadEngineTest {
         IOException error = new IOException("ERROR");
         StreamFactory streamFactory = Mockito.mock(StreamFactory.class);
         Mockito.when(streamFactory.openStream()).thenThrow(error);
-        DownloadTask task = new StreamFactoryTask(streamFactory);
+        DownloadTask task = new DownloadTask("targetFileName", new StreamFactoryDataExtractor(streamFactory));
         DownloadRequest request = new DownloadRequest();
         request.setId("42");
         request.setTitle("Foo");
-        request.setTargetFileNameSupplier(() -> "targetFileName");
-        request.setTaskSupplier(() -> task);
+        request.setTaskFactory(progressListener -> task);
 
         DownloadSchedulingListener schedulingListener = Mockito.mock(DownloadSchedulingListener.class);
         this.getEngine().addSchedulingListener(schedulingListener);
@@ -192,7 +190,7 @@ public class DownloadEngineTest {
 
         DownloadRequest request = new DownloadRequest();
         request.setTitle("TITLE");
-        request.setTaskSupplier(() -> null);
+        request.setTaskFactory(progressListener -> null);
 
         Assertions.assertNull(this.getEngine().submit(request));
         Mockito.verify(listener).onRequestSubmit(Mockito.eq(request));

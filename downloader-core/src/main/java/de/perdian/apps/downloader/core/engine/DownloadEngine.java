@@ -15,8 +15,10 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -31,7 +33,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,8 +107,8 @@ public class DownloadEngine {
             throw new NullPointerException("Parameter 'request' must not be null!");
         } else if (request.getTitle() == null) {
             throw new NullPointerException("Property 'title' of request must not be null!");
-        } else if (request.getTaskSupplier() == null) {
-            throw new NullPointerException("Property 'taskSupplier' of request must not be null!");
+        } else if (request.getTaskFactory() == null) {
+            throw new NullPointerException("Property 'taskFactory' of request must not be null!");
         } else {
             if (!this.fireRequestSubmitted(request)) {
                 return null;
@@ -217,31 +218,32 @@ public class DownloadEngine {
 
         ProgressListener progressListener = ProgressListener.compose(operation.getProgressListeners());
         DownloadRequest request = operation.getRequestWrapper().getRequest();
-        DownloadTask task = request.getTaskSupplier().get();
-        Path targetFilePath = this.computeTargetFilePath(request);
-        this.getSchedulingListeners().forEach(l -> l.onOperationTransferStarting(task, targetFilePath, operation));
+        DownloadTask task = request.getTaskFactory().createTask(progressListener);
+        Path targetPath = this.computeTargetPath(task.getTargetFileName());
+        this.getSchedulingListeners().forEach(l -> l.onOperationTransferStarting(task, targetPath, operation));
 
         if (DownloadOperationStatus.ACTIVE.equals(operation.getStatus())) {
-            try {
-                task.executeDownload(targetFilePath, progressListener, operation::getStatus);
+            try (OutputStream targetStream = Files.newOutputStream(targetPath, Files.exists(targetPath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
+                task.getDataExtractor().extractData(targetStream, progressListener, operation::getStatus);
+                targetStream.flush();
             } catch (Exception e) {
                 operation.setError(e);
                 log.warn("Error occured during file transfer [" + operation + "]", e);
                 try {
-                    Files.deleteIfExists(targetFilePath);
+                    Files.deleteIfExists(targetPath);
                 } catch (Exception e2) {
-                    log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
+                    log.debug("Cannot delete target file (after error during transfer) at: " + targetPath, e2);
                 }
                 throw e;
             } finally {
-                this.getSchedulingListeners().forEach(l -> l.onOperationTransferCompleted(task, targetFilePath, operation));
+                this.getSchedulingListeners().forEach(l -> l.onOperationTransferCompleted(task, targetPath, operation));
             }
 
             if (!DownloadOperationStatus.ACTIVE.equals(operation.getStatus())) {
                 try {
-                    Files.deleteIfExists(targetFilePath);
+                    Files.deleteIfExists(targetPath);
                 } catch (Exception e) {
-                    log.debug("Cannot delete target file (after cancel) at: " + targetFilePath, e);
+                    log.debug("Cannot delete target file (after cancel) at: " + targetPath, e);
                 }
             }
 
@@ -249,17 +251,16 @@ public class DownloadEngine {
 
     }
 
-    private Path computeTargetFilePath(DownloadRequest request) throws Exception {
-        Supplier<String> targetFileNameSupplier = Objects.requireNonNull(request.getTargetFileNameSupplier(), "Property 'targetFileNameSupplier' of request must not be null");
-        String targetFileName = Objects.requireNonNull(targetFileNameSupplier.get(), "Computed target file name must not be null!");
+    private Path computeTargetPath(String inputFileName) throws Exception {
+        String targetFileName = Objects.requireNonNull(inputFileName, "Computed target file name must not be null!");
         if (targetFileName.startsWith("/")) {
             targetFileName = targetFileName.substring(1);
         }
-        Path targetFilePath = this.getTargetDirectory().resolve(targetFileName);
-        if (!Files.exists(targetFilePath.getParent())) {
-            Files.createDirectories(targetFilePath.getParent());
+        Path targetPath = this.getTargetDirectory().resolve(targetFileName);
+        if (!Files.exists(targetPath.getParent())) {
+            Files.createDirectories(targetPath.getParent());
         }
-        return targetFilePath;
+        return targetPath;
     }
 
     private synchronized void checkWaitingRequests() {
