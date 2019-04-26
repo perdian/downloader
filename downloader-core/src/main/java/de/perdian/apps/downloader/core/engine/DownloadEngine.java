@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Christian Robert
+ * Copyright 2013-2019 Christian Robert
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +58,6 @@ public class DownloadEngine {
     private List<DownloadOperation> activeOperations = null;
     private Path targetDirectory = null;
     private int processorCount = 1;
-    private int bufferSize = 1024 * 8; // 8 KiB
-    private int notificationSize = 1024 * 64; // 64 KiB
 
     public DownloadEngine(Path targetDirectory) {
         this.setExecutorService(Executors.newCachedThreadPool());
@@ -110,8 +106,8 @@ public class DownloadEngine {
             throw new NullPointerException("Parameter 'request' must not be null!");
         } else if (request.getTitle() == null) {
             throw new NullPointerException("Property 'title' of request must not be null!");
-        } else if (request.getTaskFactory() == null) {
-            throw new NullPointerException("Property 'taskFactory' of request must not be null!");
+        } else if (request.getTaskSupplier() == null) {
+            throw new NullPointerException("Property 'taskSupplier' of request must not be null!");
         } else {
             if (!this.fireRequestSubmitted(request)) {
                 return null;
@@ -221,48 +217,22 @@ public class DownloadEngine {
 
         ProgressListener progressListener = ProgressListener.compose(operation.getProgressListeners());
         DownloadRequest request = operation.getRequestWrapper().getRequest();
-        DownloadTask task = request.getTaskFactory().createTask(progressListener);
-        Path targetFilePath = this.getTargetDirectory().resolve(Objects.requireNonNull(task.getTargetFileName(), "Task targetFileName must not be null!"));
-        if (!Files.exists(targetFilePath.getParent())) {
-            Files.createDirectories(targetFilePath.getParent());
-        }
+        DownloadTask task = request.getTaskSupplier().get();
+        Path targetFilePath = this.computeTargetFilePath(request);
         this.getSchedulingListeners().forEach(l -> l.onOperationTransferStarting(task, targetFilePath, operation));
 
         if (DownloadOperationStatus.ACTIVE.equals(operation.getStatus())) {
-
-            long inStreamSize = task.getContentFactory().size();
             try {
-                try (InputStream inStream = task.getContentFactory().openStream()) {
-                    try (OutputStream outStream = Files.newOutputStream(targetFilePath, Files.exists(targetFilePath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
-
-                        long notificationBlockSize = Math.max(this.getBufferSize(), this.getNotificationSize());
-                        long nextNotification = notificationBlockSize;
-                        long totalBytesWritten = 0;
-                        progressListener.onProgress(null, 0L, inStreamSize);
-
-                        byte[] buffer = new byte[this.getBufferSize()];
-                        for (int bufferSize = inStream.read(buffer); bufferSize > -1 && DownloadOperationStatus.ACTIVE.equals(operation.getStatus()); bufferSize = inStream.read(buffer)) {
-                            outStream.write(buffer, 0, bufferSize);
-                            totalBytesWritten += bufferSize;
-                            if (totalBytesWritten > nextNotification) {
-                                nextNotification += notificationBlockSize;
-                                progressListener.onProgress(null, totalBytesWritten, inStreamSize);
-                            }
-                        }
-                        progressListener.onProgress(null, totalBytesWritten, inStreamSize);
-                        outStream.flush();
-
-                    }
-                } catch (Exception e) {
-                    operation.setError(e);
-                    log.warn("Error occured during file transfer [" + operation + "]", e);
-                    try {
-                        Files.deleteIfExists(targetFilePath);
-                    } catch (Exception e2) {
-                        log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
-                    }
-                    throw e;
+                task.executeDownload(targetFilePath, progressListener, operation::getStatus);
+            } catch (Exception e) {
+                operation.setError(e);
+                log.warn("Error occured during file transfer [" + operation + "]", e);
+                try {
+                    Files.deleteIfExists(targetFilePath);
+                } catch (Exception e2) {
+                    log.debug("Cannot delete target file (after error during transfer) at: " + targetFilePath, e2);
                 }
+                throw e;
             } finally {
                 this.getSchedulingListeners().forEach(l -> l.onOperationTransferCompleted(task, targetFilePath, operation));
             }
@@ -277,6 +247,19 @@ public class DownloadEngine {
 
         }
 
+    }
+
+    private Path computeTargetFilePath(DownloadRequest request) throws Exception {
+        Supplier<String> targetFileNameSupplier = Objects.requireNonNull(request.getTargetFileNameSupplier(), "Property 'targetFileNameSupplier' of request must not be null");
+        String targetFileName = Objects.requireNonNull(targetFileNameSupplier.get(), "Computed target file name must not be null!");
+        if (targetFileName.startsWith("/")) {
+            targetFileName = targetFileName.substring(1);
+        }
+        Path targetFilePath = this.getTargetDirectory().resolve(targetFileName);
+        if (!Files.exists(targetFilePath.getParent())) {
+            Files.createDirectories(targetFilePath.getParent());
+        }
+        return targetFilePath;
     }
 
     private synchronized void checkWaitingRequests() {
@@ -490,28 +473,6 @@ public class DownloadEngine {
                 }
             }
             this.getEngineConfigurationListeners().forEach(l -> l.onProcessorCountUpdated(processorCount));
-        }
-    }
-
-    public int getBufferSize() {
-        return this.bufferSize;
-    }
-    public void setBufferSize(int bufferSize) {
-        if (bufferSize < 1) {
-            throw new IllegalArgumentException("Parameter 'bufferSize' must be larger than 1");
-        } else {
-            this.bufferSize = bufferSize;
-        }
-    }
-
-    public int getNotificationSize() {
-        return this.notificationSize;
-    }
-    public void setNotificationSize(int notificationSize) {
-        if (notificationSize < 1) {
-            throw new IllegalArgumentException("Parameter 'notificationSize' must be larger than 1");
-        } else {
-            this.notificationSize = notificationSize;
         }
     }
 

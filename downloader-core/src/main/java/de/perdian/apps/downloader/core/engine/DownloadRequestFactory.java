@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Christian Robert
+ * Copyright 2013-2019 Christian Robert
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,14 @@ public interface DownloadRequestFactory {
     List<DownloadRequest> createRequests(URL url) throws IOException;
 
     /**
-     * Gets the priority of this factory
+     * Gets the priority of this factory. If multiple factories are registered they will be asked
+     * one by one sorted by priority until the first factory matches.
      */
     default int getPriority() {
         return 0;
     }
 
-    public static List<DownloadRequestFactory> createDefaultFactories() {
+    static List<DownloadRequestFactory> createDefaultFactories() {
 
         ServiceLoader<DownloadRequestFactory> requestFactoryServiceLoader = ServiceLoader.load(DownloadRequestFactory.class);
         List<DownloadRequestFactory> requestFactories = requestFactoryServiceLoader.stream()

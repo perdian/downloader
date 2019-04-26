@@ -17,6 +17,7 @@ import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder;
 
 import de.perdian.apps.downloader.core.engine.DownloadOperation;
 import de.perdian.apps.downloader.core.engine.DownloadTask;
+import de.perdian.apps.downloader.core.engine.impl.tasks.StreamFactoryTask;
 
 public class MoveCompletedDownloadsSchedulingListenerTest {
 
@@ -41,13 +42,12 @@ public class MoveCompletedDownloadsSchedulingListenerTest {
         Path outDirectory = Files.createDirectory(this.getFileSystem().getPath("out/"));
 
         DownloadOperation operation = Mockito.mock(DownloadOperation.class);
-        DownloadTask task = new DownloadTask();
-        task.setTargetFileName("42.txt");
+        DownloadTask task = new StreamFactoryTask(() -> null);
 
         MoveCompletedDownloadsSchedulingListener listener = new MoveCompletedDownloadsSchedulingListener(outDirectory);
         listener.onOperationTransferCompleted(task, inFile, operation);
 
-        Path outFile = outDirectory.resolve("42.txt");
+        Path outFile = outDirectory.resolve("working.txt");
         Assertions.assertFalse(Files.exists(inFile));
         Assertions.assertTrue(Files.exists(outFile));
         Assertions.assertArrayEquals("test".getBytes(), Files.readAllBytes(outFile));

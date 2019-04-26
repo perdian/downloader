@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Christian Robert
+ * Copyright 2013-2019 Christian Robert
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
+import java.util.function.Supplier;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -26,8 +28,8 @@ import de.perdian.apps.downloader.core.support.StreamFactory;
  *
  * This class is not intended to be subclasses by client code, since detailed configuration of how
  * the remote resource can be accessed should be performed using the client implementation of the
- * {@code DownloadTaskFactory} for a {@link DownloadTask} interface that can be set as property into
- * a request object.
+ * {@code DownloadTask} interface that is created by the {@code Supplier} stored in the property
+ * {@code taskSupplier}.
  *
  * @author Christian Robert
  */
@@ -36,7 +38,8 @@ public class DownloadRequest {
 
     private String id = null;
     private String title = null;
-    private DownloadTaskFactory taskFactory = null;
+    private Supplier<String> targetFileNameSupplier = null;
+    private Supplier<DownloadTask> taskSupplier = null;
     private StreamFactory previewImageFactory = null;
     private int priority = 0;
 
@@ -59,11 +62,18 @@ public class DownloadRequest {
         this.title = title;
     }
 
-    public DownloadTaskFactory getTaskFactory() {
-        return this.taskFactory;
+    public Supplier<String> getTargetFileNameSupplier() {
+        return this.targetFileNameSupplier;
     }
-    public void setTaskFactory(DownloadTaskFactory taskFactory) {
-        this.taskFactory = taskFactory;
+    public void setTargetFileNameSupplier(Supplier<String> targetFileNameSupplier) {
+        this.targetFileNameSupplier = targetFileNameSupplier;
+    }
+
+    public Supplier<DownloadTask> getTaskSupplier() {
+        return this.taskSupplier;
+    }
+    public void setTaskSupplier(Supplier<DownloadTask> taskSupplier) {
+        this.taskSupplier = taskSupplier;
     }
 
     public StreamFactory getPreviewImageFactory() {

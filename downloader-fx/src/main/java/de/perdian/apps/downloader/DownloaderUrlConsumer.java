@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Christian Robert
+ * Copyright 2013-2019 Christian Robert
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
 import de.perdian.apps.downloader.core.engine.DownloadRequest;
 import de.perdian.apps.downloader.core.engine.DownloadRequestFactory;
-import de.perdian.apps.downloader.core.engine.impl.taskfactories.SimpleTaskFactory;
+import de.perdian.apps.downloader.core.engine.impl.tasks.StreamFactoryTask;
+import de.perdian.apps.downloader.core.support.impl.URLStreamFactory;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -74,15 +75,16 @@ class DownloaderUrlConsumer implements Consumer<String> {
                 ButtonType useOriginalUrlButtonType = new ButtonType("Use original URL", ButtonData.OK_DONE);
                 Alert requestFactoryNotFoundAlert = new Alert(AlertType.INFORMATION);
                 requestFactoryNotFoundAlert.setTitle("Unknown input URL");
-                requestFactoryNotFoundAlert.setHeaderText("The downloader doesn't know how to initiate a download for the content behing the URL.\nYou can still initiate a manual download which will try to read the content directly from the original URL");
+                requestFactoryNotFoundAlert.setHeaderText("The downloader doesn't know how to initiate a download for the content behind the URL.\nYou can still initiate a manual download which will try to read the content directly from the original URL");
                 requestFactoryNotFoundAlert.setContentText(inputUrl.toString());
                 requestFactoryNotFoundAlert.getButtonTypes().setAll(useOriginalUrlButtonType, ButtonType.CANCEL);
                 ButtonType requestFactoryNotFoundButtonType = requestFactoryNotFoundAlert.showAndWait().orElse(ButtonType.CANCEL);
                 if (useOriginalUrlButtonType.equals(requestFactoryNotFoundButtonType)) {
                     DownloadRequest downloadRequest = new DownloadRequest();
                     downloadRequest.setId(UUID.randomUUID().toString());
+                    downloadRequest.setTargetFileNameSupplier(() -> inputUrl.getFile());
                     downloadRequest.setTitle(inputUrl.toString());
-                    downloadRequest.setTaskFactory(new SimpleTaskFactory(inputUrl));
+                    downloadRequest.setTaskSupplier(() -> new StreamFactoryTask(new URLStreamFactory(inputUrl)));
                     this.getEngine().submit(downloadRequest);
                 }
 

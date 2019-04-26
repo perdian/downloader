@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Christian Robert
+ * Copyright 2013-2019 Christian Robert
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,41 +15,13 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
-import de.perdian.apps.downloader.core.support.StreamFactory;
+import java.nio.file.Path;
+import java.util.function.Supplier;
 
-public class DownloadTask {
+import de.perdian.apps.downloader.core.support.ProgressListener;
 
-    private String title = null;
-    private String targetFileName = null;
-    private StreamFactory contentFactory = null;
-    private StreamFactory previewImageFactory = null;
+public interface DownloadTask {
 
-    public String getTitle() {
-        return this.title;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getTargetFileName() {
-        return this.targetFileName;
-    }
-    public void setTargetFileName(String targetFileName) {
-        this.targetFileName = targetFileName;
-    }
-
-    public StreamFactory getContentFactory() {
-        return this.contentFactory;
-    }
-    public void setContentFactory(StreamFactory contentFactory) {
-        this.contentFactory = contentFactory;
-    }
-
-    public StreamFactory getPreviewImageFactory() {
-        return this.previewImageFactory;
-    }
-    public void setPreviewImageFactory(StreamFactory previewImageFactory) {
-        this.previewImageFactory = previewImageFactory;
-    }
+    void executeDownload(Path targetPath, ProgressListener progressListener, Supplier<DownloadOperationStatus> statusSupplier) throws Exception;
 
 }
