@@ -33,10 +33,6 @@ public class DownloaderApplication extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(DownloaderApplication.class);
 
-    public static void main(String[] args) {
-        Application.launch(DownloaderApplication.class, args);
-    }
-
     @Override
     public void start(Stage primaryStage) throws Exception {
 
