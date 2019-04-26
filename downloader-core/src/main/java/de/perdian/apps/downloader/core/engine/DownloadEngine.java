@@ -182,7 +182,7 @@ public class DownloadEngine {
 
             log.debug("Starting operation: {}", operation);
             this.getSchedulingListeners().forEach(l -> l.onOperationStarting(operation));
-            this.startOperationTransfer(operation);
+            this.startOperationExtractData(operation);
 
             operation.setEndTime(this.getClock().instant());
             operation.setStatus(DownloadOperationStatus.COMPLETED);
@@ -214,7 +214,7 @@ public class DownloadEngine {
 
     }
 
-    private void startOperationTransfer(DownloadOperation operation) throws Exception {
+    private void startOperationExtractData(DownloadOperation operation) throws Exception {
 
         ProgressListener progressListener = ProgressListener.compose(operation.getProgressListeners());
         DownloadRequest request = operation.getRequestWrapper().getRequest();
@@ -228,7 +228,7 @@ public class DownloadEngine {
                 targetStream.flush();
             } catch (Exception e) {
                 operation.setError(e);
-                log.warn("Error occured during file transfer [" + operation + "]", e);
+                log.warn("Error occured during data extraction [" + operation + "]", e);
                 try {
                     Files.deleteIfExists(targetPath);
                 } catch (Exception e2) {
