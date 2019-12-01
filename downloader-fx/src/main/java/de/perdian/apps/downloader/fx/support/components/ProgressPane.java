@@ -80,7 +80,7 @@ public class ProgressPane extends GridPane implements ProgressListener {
             double progressValue = unitValue * bytesWritten;
             Platform.runLater(() -> this.getProgressBar().setProgress(progressValue * 0.01));
         } else {
-            this.getProgressBar().setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+            Platform.runLater(() -> this.getProgressBar().setProgress(ProgressBar.INDETERMINATE_PROGRESS));
         }
     }
 
