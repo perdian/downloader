@@ -37,7 +37,7 @@
 
     <properties>
         <commons-lang3.version>3.9</commons-lang3.version>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <java.version>11</java.version>
         <junit.jupiter.version>5.4.2</junit.jupiter.version>
         <junit.platform.version>1.4.2</junit.platform.version>
