@@ -17,7 +17,7 @@
     <developers>
         <developer>
             <id>perdian</id>
-            <name>Christian Robert</name>
+            <name>Christian Seifert</name>
             <email>dev@perdian.de</email>
         </developer>
     </developers>
@@ -33,17 +33,18 @@
     <modules>
         <module>downloader-core</module>
         <module>downloader-fx</module>
+        <module>downloader-impl</module>
     </modules>
 
     <properties>
-        <commons-lang3.version>3.9</commons-lang3.version>
-        <commons-io.version>2.6</commons-io.version>
-        <java.version>11</java.version>
-        <junit.jupiter.version>5.4.2</junit.jupiter.version>
+        <commons-lang3.version>3.15.0</commons-lang3.version>
+        <commons-io.version>2.16.1</commons-io.version>
+        <java.version>22</java.version>
+        <junit.jupiter.version>5.10.3</junit.jupiter.version>
         <junit.platform.version>1.4.2</junit.platform.version>
-        <logback.version>1.2.3</logback.version>
-        <mockito.version>2.27.0</mockito.version>
-        <slf4j.version>1.7.26</slf4j.version>
+        <logback.version>1.5.6</logback.version>
+        <mockito.version>5.12.0</mockito.version>
+        <slf4j.version>2.0.13</slf4j.version>
     </properties>
 
     <build>
@@ -51,7 +52,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <source>${java.version}</source>
@@ -61,11 +62,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.4.2</version>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -73,7 +74,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.1</version>
+                <version>3.3.1</version>
             </plugin>
         </plugins>
     </build>
@@ -103,12 +104,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit.platform.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

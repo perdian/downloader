@@ -6,7 +6,7 @@
         <artifactId>downloader-parent</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>downloader-core</artifactId>
+    <artifactId>downloader-impl</artifactId>
 
     <url>https://github.com/perdian/downloader</url>
 
@@ -33,21 +33,19 @@
     </licenses>
 
     <properties>
-        <memoryfilesystem.version>2.1.0</memoryfilesystem.version>
-        <okhttp.version>4.12.0</okhttp.version>
+        <jsoup.version>1.18.1</jsoup.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
+            <groupId>de.perdian.apps.downloader</groupId>
+            <artifactId>downloader-fx</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.marschall</groupId>
-            <artifactId>memoryfilesystem</artifactId>
-            <version>${memoryfilesystem.version}</version>
-            <scope>test</scope>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
         </dependency>
     </dependencies>
 

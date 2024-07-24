@@ -1,0 +1,17 @@
+<configuration>
+
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <logger name="de.perdian.apps.downloader.core.engine" level="ERROR" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyyMMdd HHmmss} | %-5level @ %logger{1} | %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

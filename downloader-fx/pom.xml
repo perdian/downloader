@@ -19,7 +19,7 @@
     <developers>
         <developer>
             <id>perdian</id>
-            <name>Christian Robert</name>
+            <name>Christian Seifert</name>
             <email>dev@perdian.de</email>
         </developer>
     </developers>
@@ -33,7 +33,7 @@
     </licenses>
 
     <properties>
-        <javafx.version>11.0.2</javafx.version>
+        <javafx.version>22.0.2</javafx.version>
     </properties>
 
     <dependencies>

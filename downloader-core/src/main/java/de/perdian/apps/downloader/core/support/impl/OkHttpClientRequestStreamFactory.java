@@ -15,21 +15,21 @@
  */
 package de.perdian.apps.downloader.core.support.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import de.perdian.apps.downloader.core.support.StreamFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class OkHttpClientRequestStreamFactory implements StreamFactory {
 
     private OkHttpClient httpClient = null;
     private String url = null;
+    private Response response = null;
 
     public OkHttpClientRequestStreamFactory(String url) {
         this(url, new OkHttpClient.Builder().build());
@@ -49,14 +49,12 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
 
     @Override
     public InputStream openStream() throws IOException {
-        return this.getHttpClient().newCall(new Request.Builder().url(this.getUrl()).build()).execute().body().byteStream();
+        return this.ensureResponse().body().byteStream();
     }
 
     @Override
     public long size() throws IOException {
-        try (Response response = this.getHttpClient().newCall(new Request.Builder().url(this.getUrl()).build()).execute()) {
-            return response.body().contentLength();
-        }
+        return this.ensureResponse().body().contentLength();
     }
 
     public OkHttpClient getHttpClient() {
@@ -71,6 +69,19 @@ public class OkHttpClientRequestStreamFactory implements StreamFactory {
     }
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    private synchronized Response ensureResponse() throws IOException {
+        if (this.response == null) {
+            this.response = this.getHttpClient().newCall(new Request.Builder().url(this.getUrl()).build()).execute();
+        }
+        return this.response;
+    }
+    private Response getResponse() {
+        return this.response;
+    }
+    private void setResponse(Response response) {
+        this.response = response;
     }
 
 }

@@ -15,12 +15,6 @@
  */
 package de.perdian.apps.downloader;
 
-import java.io.File;
-import java.nio.file.Path;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.perdian.apps.downloader.core.engine.DownloadEngine;
 import de.perdian.apps.downloader.core.engine.DownloadRequestFactory;
 import de.perdian.apps.downloader.fx.EngineSettingsPane;
@@ -28,6 +22,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DownloaderApplication extends Application {
 
@@ -37,7 +33,7 @@ public class DownloaderApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         log.info("Creating DownloadEngine");
-        DownloadEngine engine = this.createEngine();
+        DownloadEngine engine = DownloaderEngineProviderRegistry.getProvider().createEngine();
 
         log.info("Creating DownloaderConfiguration");
         DownloaderConfiguration configuration = this.createConfiguration(engine);
@@ -58,11 +54,6 @@ public class DownloaderApplication extends Application {
 
         log.info("Application start completed");
 
-    }
-
-    protected DownloadEngine createEngine() {
-        Path targetDirectory = new File(System.getProperty("user.home"), "Downloads").toPath();
-        return new DownloadEngine(targetDirectory);
     }
 
     protected DownloaderConfiguration createConfiguration(DownloadEngine engine) {
