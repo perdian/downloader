@@ -15,10 +15,12 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
+import de.perdian.apps.downloader.core.support.StreamFactory;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import de.perdian.apps.downloader.core.support.StreamFactory;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Transporter object to request the {@link DownloadEngine} to schedule a download operation for a
@@ -38,6 +40,7 @@ public class DownloadRequest {
     private DownloadTaskFactory taskFactory = null;
     private StreamFactory previewImageFactory = null;
     private int priority = 0;
+    private List<DownloadPostProcessor> postProcessors = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -77,6 +80,20 @@ public class DownloadRequest {
     }
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public DownloadRequest addProcessor(DownloadPostProcessor postProcessor) {
+        if (this.postProcessors == null) {
+            this.postProcessors = new ArrayList<>();
+        }
+        this.postProcessors.add(postProcessor);
+        return this;
+    }
+    public List<DownloadPostProcessor> getPostProcessors() {
+        return this.postProcessors;
+    }
+    public void setPostProcessors(List<DownloadPostProcessor> postProcessors) {
+        this.postProcessors = postProcessors;
     }
 
 }

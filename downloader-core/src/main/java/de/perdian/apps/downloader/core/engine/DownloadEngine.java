@@ -15,29 +15,21 @@
  */
 package de.perdian.apps.downloader.core.engine;
 
+import de.perdian.apps.downloader.core.support.ProgressListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.perdian.apps.downloader.core.support.ProgressListener;
 
 /**
  * An engine represents the central manager object, into which new requests that are supposed to
@@ -223,9 +215,20 @@ public class DownloadEngine {
         this.getSchedulingListeners().forEach(l -> l.onOperationTransferStarting(task, targetPath, operation));
 
         if (DownloadOperationStatus.ACTIVE.equals(operation.getStatus())) {
-            try (OutputStream targetStream = Files.newOutputStream(targetPath, Files.exists(targetPath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
-                task.getDataExtractor().extractData(targetStream, progressListener, operation::getStatus);
-                targetStream.flush();
+            try {
+
+                try (OutputStream targetStream = Files.newOutputStream(targetPath, Files.exists(targetPath) ? StandardOpenOption.WRITE : StandardOpenOption.CREATE)) {
+                    task.getDataExtractor().extractData(targetStream, progressListener, operation::getStatus);
+                    targetStream.flush();
+                }
+
+                List<DownloadPostProcessor> postProcessors = request.getPostProcessors();
+                if (postProcessors != null && !postProcessors.isEmpty()) {
+                    for (DownloadPostProcessor postProcessor : postProcessors) {
+                        postProcessor.afterDownloadCompleted(targetPath, progressListener);
+                    }
+                }
+
             } catch (Exception e) {
                 operation.setError(e);
                 log.warn("Error occured during data extraction [" + operation + "]", e);
