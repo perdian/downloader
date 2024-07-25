@@ -35,8 +35,17 @@ public class DownloaderLauncher {
 
     private static final Logger log = LoggerFactory.getLogger(DownloaderLauncher.class);
     private static final List<String> pages = List.of(
-        "https://downloads.khinsider.com/game-soundtracks/album/mario-kart-8-deluxe-the-definitive-soundtrack-switch-gamerip-2014"
-//        "https://downloads.khinsider.com/game-soundtracks/album/who-wants-to-be-a-millionaire-the-album"
+//        "https://downloads.khinsider.com/game-soundtracks/album/mario-kart-8-deluxe-the-definitive-soundtrack-switch-gamerip-2014"
+//        "https://downloads.khinsider.com/game-soundtracks/album/who-wants-to-be-a-millionaire-the-album",
+//        "https://downloads.khinsider.com/game-soundtracks/album/battlefield-1942-unreleased-soundtrack-content-macos-windows-gamerip-2002"
+//        "https://downloads.khinsider.com/game-soundtracks/album/sid-meier-s-pirates-2004-pc",
+//        "https://downloads.khinsider.com/game-soundtracks/album/wing-commander-ibm-pc-at",
+//        "https://downloads.khinsider.com/game-soundtracks/album/wing-commander-1992-snes",
+//        "https://downloads.khinsider.com/game-soundtracks/album/wing-commander-ii-vengeance-of-the-kilrathi-ibm-pc-at",
+//        "https://downloads.khinsider.com/game-soundtracks/album/wing-commander-iii-heart-of-the-tiger-3do-macos-ms-dos-windows-gamerip-1994",
+//        "https://downloads.khinsider.com/game-soundtracks/album/wing-commander-iv-the-price-of-freedom-ms-dos-ps1-windows-gamerip-1996",
+//        "https://downloads.khinsider.com/game-soundtracks/album/wing-one-music-from-wing-commander-1-2016",
+        "https://downloads.khinsider.com/game-soundtracks/album/command-and-conquer-generals-soundtrack"
     );
 
     public static void main(String[] args) throws Exception {

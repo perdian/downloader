@@ -10,7 +10,6 @@ public class MP3DownloadPostProcessor implements DownloadPostProcessor {
 
     @Override
     public void afterDownloadCompleted(Path downloadedFile, ProgressListener progressListener) throws IOException {
-        System.err.println("POST PROCESS: " + downloadedFile);
     }
 
 }
